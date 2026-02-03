@@ -6,9 +6,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SessionModule } from './modules/session/session.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RoleModule } from './modules/role/role.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
-  imports: [UserModule, AuthModule, SessionModule, ProfileModule, RoleModule],
+  imports: [UserModule, AuthModule, SessionModule, ProfileModule, RoleModule, ContactModule],
   controllers: [AppController],
   providers: [AppService],
 })
