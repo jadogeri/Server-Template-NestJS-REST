@@ -1,0 +1,23 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <!-- Entities -->
+    <mxCell id="auth" value="Auth" style="whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="80" width="100" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="user" value="User" style="whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="280" y="80" width="100" height="40" as="geometry" />
+    </mxCell>
+    <!-- Relationship: Belongs To (Total-Total) -->
+    <mxCell id="rel1" value="Belongs To" style="rhombus;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="170" y="70" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="edge1a" value="1" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=3;" edge="1" parent="1" source="auth" target="rel1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="edge1b" value="1" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=3;" edge="1" parent="1" source="rel1" target="user">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
