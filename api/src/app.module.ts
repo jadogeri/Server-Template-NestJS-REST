@@ -7,9 +7,10 @@ import { SessionModule } from './modules/session/session.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { RoleModule } from './modules/role/role.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { PermissionModule } from './modules/permission/permission.module';
 
 @Module({
-  imports: [UserModule, AuthModule, SessionModule, ProfileModule, RoleModule, ContactModule],
+  imports: [UserModule, AuthModule, SessionModule, ProfileModule, RoleModule, ContactModule, PermissionModule],
   controllers: [AppController],
   providers: [AppService],
 })
