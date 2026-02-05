@@ -26,7 +26,7 @@ export const dataSourceOptions: TypeOrmModuleOptions & SeederOptions = {
   // {ts,js} matches both source and compiled files
     // 🔍 Check these paths carefully!
 
-  entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../core/database/migrations/*{.ts,.js}'],
   subscribers: [__dirname + '/../core/database/subscribers/*{.ts,.js}'],
   // seeds: [UserSeeder],
