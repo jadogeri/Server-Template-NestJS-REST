@@ -6,8 +6,10 @@ import { ContactModule } from './modules/contact/contact.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { AuthModule } from './core/auth/auth.module';
 import { SessionModule } from './core/session/session.module';
-import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
-import { dataSourceOptions } from './configs/type-orm.config';
+import dataSourceOptions from './configs/type-orm.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
   imports: [
@@ -18,7 +20,8 @@ import { dataSourceOptions } from './configs/type-orm.config';
     RoleModule, 
     ContactModule, 
     PermissionModule,
-    TypeOrmModule.forRoot({ ...dataSourceOptions }),    
+    TypeOrmModule.forRoot({ ...dataSourceOptions }),
+    ConfigModule.forRoot({   isGlobal: true,  }),
   ],
   controllers: [],
   providers: [],

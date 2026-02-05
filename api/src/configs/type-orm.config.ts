@@ -5,7 +5,6 @@ import { SeederOptions } from 'typeorm-extension';
 // import UserSeeder from '../resources/user/user.seeder';
 // import { UserFactory } from '../resources/user/user.factory';
 import dotenv from 'dotenv';
-import { User } from '../modules/user/entities/user.entity';
 
 
 dotenv.config();
