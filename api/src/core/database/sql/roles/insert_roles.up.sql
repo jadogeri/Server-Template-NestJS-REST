@@ -8,6 +8,11 @@ INSERT INTO "roles" ("name", "description")
 SELECT 'user', 'Standard registered user'
 WHERE NOT EXISTS (SELECT 1 FROM "roles" WHERE "name" = 'user');
 
+-- GUEST
+INSERT INTO "roles" ("name", "description")
+SELECT 'guest', 'Unregistered user with limited access'
+WHERE NOT EXISTS (SELECT 1 FROM "roles" WHERE "name" = 'guest');
+
 -- EDITOR
 INSERT INTO "roles" ("name", "description")
 SELECT 'editor', 'Can create and edit content but cannot manage users'
