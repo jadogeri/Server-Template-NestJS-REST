@@ -20,7 +20,7 @@ export class Profile {
     website: string;
 
     @Column({ nullable: true })
-    socialMediaHandle: string;
+    socialMedia: string;
 
     @Column({ nullable: true })
     gender: string;

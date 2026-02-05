@@ -73,9 +73,19 @@
             <span class="path">/auth/reset-password</span>
             <span class="description">Sets a new password using a reset token.</span>
         </div>
+        <div class="endpoint">
+            <span class="method patch">PATCH</span>
+            <span class="path">/auth/deactivate</span>
+            <span class="description">Disables a registered user account.</span>
+        </div>
     </div>
     <div class="section">
         <h2 class="section-title">2. Session Management (/sessions)</h2>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/sessions/:id</span>
+            <span class="description">Retreives single active sessions for the current user.</span>
+        </div>
         <div class="endpoint">
             <span class="method get">GET</span>
             <span class="path">/sessions</span>
