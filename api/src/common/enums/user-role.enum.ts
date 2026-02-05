@@ -4,4 +4,5 @@ export enum UserRole {
   EDITOR = 'editor',
   VIEWER = 'viewer',  
   SUPER_USER = 'super user',
+  GUEST = 'guest',
 }
