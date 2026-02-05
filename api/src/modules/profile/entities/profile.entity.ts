@@ -5,16 +5,25 @@ import { Location } from "../../../common/entities/location.entity";
 @Entity("profile")
 export class Profile {
     @PrimaryGeneratedColumn()
-    profile_id: number;
+    id: number;
 
     @Column({ nullable: true })
     bio: string;
 
     @Column({ nullable: true })
-    avatar_url: string;
+    avatarUrl: string;
 
     @Column(() => Location) 
     location?: Location;
+
+    @Column({ nullable: true })
+    website: string;
+
+    @Column({ nullable: true })
+    socialMediaHandle: string;
+
+    @Column({ nullable: true })
+    gender: string;
 
     // Use "simple-json" to store preferences as an object (e.g., { theme: 'dark' })
     @Column("simple-json", { nullable: true })
