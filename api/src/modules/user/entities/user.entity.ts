@@ -3,9 +3,9 @@ import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsString, Length } from 'class-validator';
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, ManyToMany, JoinTable, getRepository } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger'; // Added import
-import { Profile } from 'src/modules/profile/entities/profile.entity';
+import { Profile } from '../../profile/entities/profile.entity';
 import { Auth } from '../../../core/auth/entities/auth.entity';
-import { Role } from 'src/modules/role/entities/role.entity';
+import { Role } from '../../role/entities/role.entity';
 import { Audit } from '../../../common/entities/audit.entity';
 
 @Entity()

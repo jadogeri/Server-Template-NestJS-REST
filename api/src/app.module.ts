@@ -6,9 +6,23 @@ import { ContactModule } from './modules/contact/contact.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { AuthModule } from './core/auth/auth.module';
 import { SessionModule } from './core/session/session.module';
+import dataSourceOptions from './configs/type-orm.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
-  imports: [UserModule, AuthModule, SessionModule, ProfileModule, RoleModule, ContactModule, PermissionModule],
+  imports: [
+    UserModule, 
+    AuthModule, 
+    SessionModule, 
+    ProfileModule, 
+    RoleModule, 
+    ContactModule, 
+    PermissionModule,
+    TypeOrmModule.forRoot({ ...dataSourceOptions }),
+    ConfigModule.forRoot({   isGlobal: true,  }),
+  ],
   controllers: [],
   providers: [],
 })
