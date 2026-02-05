@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 import { Location } from "../../../common/entities/location.entity";
 import { Audit } from "../../../common/entities/audit.entity";
-@Entity()
+@Entity("contacts")
 export class Contact extends Audit {
     @PrimaryGeneratedColumn()
     id: number;

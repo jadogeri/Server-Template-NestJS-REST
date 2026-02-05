@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, UpdateDat
 import { User } from "../../user/entities/user.entity";
 import { Location } from "../../../common/entities/location.entity";
 
-@Entity("profile")
+@Entity("profiles")
 export class Profile {
     @PrimaryGeneratedColumn()
     id: number;

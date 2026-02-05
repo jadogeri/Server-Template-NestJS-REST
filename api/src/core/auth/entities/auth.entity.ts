@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Session } from '../../session/entities/session.entity';
 import { Audit } from '../../../common/entities/audit.entity';
 
-@Entity()
+@Entity("auths")
 export class Auth extends Audit {
   @ApiProperty({ example: 1, description: 'The unique identifier of the auth record' })
   @PrimaryGeneratedColumn()

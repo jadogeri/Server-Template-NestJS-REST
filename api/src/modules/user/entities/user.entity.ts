@@ -8,7 +8,7 @@ import { Auth } from '../../../core/auth/entities/auth.entity';
 import { Role } from '../../role/entities/role.entity';
 import { Audit } from '../../../common/entities/audit.entity';
 
-@Entity()
+@Entity("users")
 export class User extends Audit {
   @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
   @PrimaryGeneratedColumn()
