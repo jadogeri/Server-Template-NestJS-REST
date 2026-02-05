@@ -40,45 +40,40 @@ export class AuthController {
     // 1. Register User: POST /auth/register
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
-    //return this.authService.register(registerDto);
-    return this.authService.findAll();
+    return this.authService.register(registerDto);
   }
 
   // 2. Login: POST /auth/login
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    //return this.authService.login(loginDto);
-    return this.authService.findAll();
+    return this.authService.login(loginDto);
   }
 
   // 3. Logout: POST /auth/logout (Requires JWT)
   //@UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Request() req) {
-    //return this.authService.logout(req.user);
-    return this.authService.findAll();  
+    return this.authService.logout(req.user);
   }
 
   // 4. Forgot Password: POST /auth/forgot-password
   @Post('forgot-password')
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    //return this.authService.forgotPassword(forgotPasswordDto);
-    return this.authService.findAll();
+    return this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
   // 5. Reset Password: PATCH /auth/reset-password
   @Patch('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    //return this.authService.resetPassword(resetPasswordDto);
-    return this.authService.findAll();
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   // 6. Deactivate User: PATCH /auth/deactivate (Requires JWT)
   //@UseGuards(JwtAuthGuard)
   @Patch('deactivate')
   async deactivate(@Request() req) {
-    //return this.authService.deactivate(req.user.id);
-    return this.authService.findAll();
+    return this.authService.deactivateUser(req.user.id);
+    
   }
 }
