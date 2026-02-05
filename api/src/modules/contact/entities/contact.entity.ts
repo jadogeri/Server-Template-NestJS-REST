@@ -18,8 +18,8 @@ export class Contact extends Audit {
     @Column({ nullable: true })
     fax: string;
 
-  // This embeds Location's columns directly into the Contact table
-  @Column(() => Location)
-  location?: Location;
+    // This embeds Location's columns directly into the Contact table
+    @Column(() => Location)
+    location?: Location;
 
 }
