@@ -32,7 +32,11 @@ describe('AuthController', () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
+  it('controller should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('service should be defined', () => {
+    expect(service).toBeDefined();
   });
 });

@@ -73,4 +73,15 @@ export class AuthService {
     // Logic: Verify token, update user status to 'verified' in DB
     return { message: 'Email verified successfully' };
   }
+
+  // 8. Reactivate logic
+  async reactivateAccount(token: string) {
+    // Logic: Verify token, update user status to 'active' in DB
+    return { message: 'Account reactivated successfully' };
+  }
+  // 9. Unregister logic
+  async unregisterAccount(userId: string) {
+    // Logic: Permanently delete user from DB
+    return { message: `Account ${userId} permanently deleted` };
+  }
 }

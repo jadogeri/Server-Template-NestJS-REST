@@ -1,5 +1,5 @@
 import { Repository } from "typeorm/repository/Repository";
-import { Auth } from "../../core/auth/entities/auth.entity";
+import { Auth } from "../../modules/auth/entities/auth.entity";
 
 export interface CustomAuthRepositoryMethodsInterface {
 
