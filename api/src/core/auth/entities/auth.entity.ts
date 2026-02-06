@@ -28,10 +28,16 @@ export class Auth extends Audit {
   @Column({ default: true }) // 👈 Set to false to "ban" or deactivate an account
   isEnabled: boolean;
 
+  @Column({ nullable: true, default: null }) // 👈 Set to false to "ban" or deactivate an account
+  verificationToken: string;
+
   @Column({ default: false })
   isVerified: boolean;
+  
+  @Column({ type: 'datetime', nullable: true, default: null })
+  verifiedAt: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'datetime', nullable: true, default: null })
   lastLoginAt: Date;
 
   @OneToOne(() => User, (user) => user.auth, { onDelete: 'CASCADE', cascade: true }) // CRITICAL: This allows saving User via Auth
