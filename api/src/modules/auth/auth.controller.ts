@@ -13,7 +13,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Create a new user account' })
   @ApiBody({ 
-    type: CreateAuthDto,
+    type: RegisterDto,
     examples: {
       example1: {
         summary: 'Example Auth Creation',

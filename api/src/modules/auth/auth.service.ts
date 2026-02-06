@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
@@ -31,8 +31,31 @@ export class AuthService {
 
   // 1. Register logic
   async register(registerDto: RegisterDto) {
-    // Logic: Hash password, save user to DB
-    return { message: 'User registered successfully', user: registerDto.email };
+  const { email, password, firstName, lastName, dateOfBirth } = registerDto;
+  
+  const existingUser = await this.authRepository.findOne({ where: { email } });
+  if (existingUser) {
+    throw new ConflictException(`Email address "${email}" has already been registered.`);
+  }
+
+  const newUser = UserGeneratorUtil.generate({ firstName, lastName, age });
+  const hashedPassword = await this.bcryptService.hashPassword(password);
+  
+  const newAuth = AuthGeneratorUtil.generate({ email, password: hashedPassword });
+  newAuth.user = newUser; // Cascading will handle the user creation
+
+
+  const savedUser = await this.userRepository.create(newUser);
+  const savedAuth = await this.authRepository.create(newAuth);  
+
+  
+  // RELOAD: This fetches the Auth AND the User together
+   const auth =  await this.authRepository.findOne({
+    where: { id: savedAuth.id },
+    relations: ['user']
+  });
+  console.log("Newly created auth with user:", auth);
+  return auth;
   }
 
   // 2. Login logic
