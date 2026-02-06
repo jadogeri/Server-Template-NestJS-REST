@@ -4,11 +4,14 @@ import { AuthController } from './auth.controller';
 import { Auth } from './entities/auth.entity';
 import { AuthRepository } from './auth.repository';
 import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
+import { UserService } from '../user/user.service';
+import { HashingService } from 'src/core/security/hashing/hashing.service';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Auth])],
+  imports: [UserModule, TypeOrmModule.forFeature([Auth])],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository],
+  providers: [HashingService , AuthService, AuthRepository],
   exports: [AuthService, AuthRepository],
 })
 export class AuthModule {}

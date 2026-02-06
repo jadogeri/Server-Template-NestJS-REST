@@ -5,6 +5,9 @@ import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
 import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
+import { UserRepository } from '../user/user.repository';
+import { HashingService } from 'src/core/security/hashing/hashing.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +15,8 @@ export class AuthService {
 
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly userRepository: UserRepository,  
+    private readonly userService: UserService, 
+    private readonly hashService: HashingService, // Replace with actual Argon2 service 
   ) {}
   create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';
@@ -44,13 +48,13 @@ export class AuthService {
   }
 
   const newUser = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
-  const hashedPassword = await this.bcryptService.hashPassword(password);
+  const hashedPassword = await this.hashService.hash(password);
   
   const newAuth = AuthGeneratorUtil.generate({ email, password: hashedPassword });
   newAuth.user = newUser; // Cascading will handle the user creation
 
 
-  const savedUser = await this.userRepository.create(newUser);
+  const savedUser = await this.userService.create(newUser);
   const savedAuth = await this.authRepository.create(newAuth);  
 
   
