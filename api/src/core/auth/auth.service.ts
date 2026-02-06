@@ -6,6 +6,7 @@ import { AuthRepository } from './auth.repository';
 
 @Injectable()
 export class AuthService {
+  [x: string]: any;
 
   constructor(private readonly authRepository: AuthRepository) {}
   create(createAuthDto: CreateAuthDto) {
@@ -65,5 +66,11 @@ export class AuthService {
   async logout(user: any) {
     // Logic: Invalidate token (if using blacklisting) or clear session
     return { message: 'Logout successful' };
+  }
+
+  // 7. Verify Email logic
+  async verifyEmail(token: string) {
+    // Logic: Verify token, update user status to 'verified' in DB
+    return { message: 'Email verified successfully' };
   }
 }

@@ -42,3 +42,10 @@ export class ResetPasswordDto {
   @IsStrongPassword({ minLength: 8 })
   newPassword: string;
 }
+
+
+export class VerifyEmailDto {
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+}

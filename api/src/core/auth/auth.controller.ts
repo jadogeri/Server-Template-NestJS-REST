@@ -1,6 +1,6 @@
 import { Controller,Get, Post, Body, Patch, Param, Delete,UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
 //import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from '../auth/dto/auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto } from '../auth/dto/auth.dto';
 //import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Assume standard JWT Guard
 
 
@@ -75,5 +75,16 @@ export class AuthController {
   async deactivate(@Request() req) {
     return this.authService.deactivateUser(req.user.id);
     
+  }
+
+   /**
+   * Final verification endpoint called by the Frontend.
+   * Uses POST because it modifies the user's verification state.
+   */
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    // verifyEmailDto.token will contain the token from the URL
+    return await this.authService.verifyEmail(verifyEmailDto.token);
   }
 }
