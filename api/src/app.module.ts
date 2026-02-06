@@ -9,6 +9,7 @@ import { SessionModule } from './modules/session/session.module';
 import dataSourceOptions from './configs/type-orm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { HashingService } from './core/security/hashing/hashing.service';
 
 
 @Module({
@@ -24,7 +25,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({   isGlobal: true,  }),
   ],
   controllers: [],
-  providers: [],
+  providers: [HashingService],
 })
 export class AppModule {}
 

@@ -3,6 +3,8 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
+import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
+import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +40,7 @@ export class AuthService {
     throw new ConflictException(`Email address "${email}" has already been registered.`);
   }
 
-  const newUser = UserGeneratorUtil.generate({ firstName, lastName, age });
+  const newUser = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
   const hashedPassword = await this.bcryptService.hashPassword(password);
   
   const newAuth = AuthGeneratorUtil.generate({ email, password: hashedPassword });
