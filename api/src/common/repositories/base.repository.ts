@@ -1,6 +1,6 @@
     
 // src/core/repositories/base.repository.ts
-import { Repository, FindManyOptions, FindOneOptions, DeepPartial, ObjectLiteral, DeleteResult } from 'typeorm';
+import { Repository, FindManyOptions, FindOneOptions, DeepPartial, ObjectLiteral, DeleteResult, QueryDeepPartialEntity, UpdateResult } from 'typeorm';
 
 export abstract class BaseRepository<T extends ObjectLiteral> {
   constructor(protected readonly repository: Repository<T>) {}
@@ -21,6 +21,12 @@ export abstract class BaseRepository<T extends ObjectLiteral> {
   async findOneById(id: any): Promise<T | null> {
     return await this.repository.findOne({ where: { id } });
   }
+
+  async update(id: any, data: QueryDeepPartialEntity<T>): Promise<T | null> {
+    await this.repository.update(id, data);
+    return this.findOneById(id);
+  }
+
 
   async delete(id: any): Promise<DeleteResult> {
     return await this.repository.delete(id);

@@ -10,7 +10,10 @@ import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
 export class AuthService {
   [x: string]: any;
 
-  constructor(private readonly authRepository: AuthRepository) {}
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly userRepository: UserRepository,  
+  ) {}
   create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';
   }
