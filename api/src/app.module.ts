@@ -20,10 +20,12 @@ import { ConfigModule } from '@nestjs/config';
     RoleModule, 
     ContactModule, 
     PermissionModule,
-    TypeOrmModule.forRoot({ ...dataSourceOptions }),
+    TypeOrmModule.forRoot({ ...dataSourceOptions, autoLoadEntities: true }),
     ConfigModule.forRoot({   isGlobal: true,  }),
   ],
   controllers: [],
   providers: [],
 })
 export class AppModule {}
+
+  
