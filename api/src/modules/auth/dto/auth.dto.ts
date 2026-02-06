@@ -1,36 +1,40 @@
-import { IsEmail, IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { IsUserEmail } from '../../../common/decorators/validators/is-email.decorator'; 
+import { IsFormattedDate } from '../../../common/decorators/validators/is-formatted-date.decorator';
+import { IsSecuredPassword } from '../../../common/decorators/validators/is-secured-password.decorator';
+import { IsName } from '../../../common/decorators/validators/is-name.decorator';
 
 export class RegisterDto {
-  @IsNotEmpty()
-  @IsString()
-  username: string;
 
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsName('FirstName')
+  firstName: string;
+
+  @IsName('LastName')
+  lastName: string;
+
+  @IsUserEmail()
   email: string;
 
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minNumbers: 1,
-    minSymbols: 1,
-    minUppercase: 1,
-  }, { message: 'Password must be at least 8 characters and include uppercase, lowercase, numbers, and symbols' })
+  @IsSecuredPassword()
   password: string;
+
+  /// Use date-fns to strictly parse the custom format
+  @IsFormattedDate('dd-MMM-yyyy')
+  dateOfBirth: Date;
 }
 
 
 
 export class LoginDto {
-  @IsEmail()
+  @IsUserEmail()
   email: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsSecuredPassword()
   password: string;
 }
 
 export class ForgotPasswordDto {
-  @IsEmail({}, { message: 'Enter a valid email to receive a reset link' })
+  @IsUserEmail()
   email: string;
 }
 
@@ -39,7 +43,7 @@ export class ResetPasswordDto {
   @IsString()
   token: string;
 
-  @IsStrongPassword({ minLength: 8 })
+  @IsSecuredPassword()
   newPassword: string;
 }
 
@@ -55,3 +59,4 @@ export class ReactivateDto {
   @IsNotEmpty()
   token: string;
 }
+

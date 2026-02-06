@@ -17,7 +17,7 @@ export class AuthController {
     examples: {
       example1: {
         summary: 'Example Auth Creation',
-        value: { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', age: 30, password:"password#W@" }
+        value: { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', dateOfBirth: '01-FEB-1990', password:"P@55W0rd" }
       }
     }
   })
@@ -25,7 +25,7 @@ export class AuthController {
     status: 201,
     description: 'The user has been successfully created.',
     schema: {
-      example: { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', age: 30 }
+      example: { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', dateOfBirth: '01-FEB-1990' }
     }
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })

@@ -15,6 +15,7 @@ async function bootstrap() {
     whitelist: true, // Strips non-decorated properties
     forbidNonWhitelisted: true, // Throws error if extra properties are sent
     transform: true, // Automatically transforms payloads to DTO instances
+    stopAtFirstError: true, // Stops validation on the first error encountered
   }));
   await app.listen(process.env.PORT ?? 3000);
 }
