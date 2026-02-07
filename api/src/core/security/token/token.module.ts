@@ -1,11 +1,13 @@
 // src/auth/token/token.module.ts
 import { Module } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TokenService } from './token.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Auth } from '../../../modules/auth/entities/auth.entity';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Auth])],
   providers: [
     TokenService,
     // Provider for Access Tokens

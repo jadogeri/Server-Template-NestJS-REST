@@ -3,6 +3,7 @@ import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Service } from '../../../common/decorators/service.decorator';
 
+
 @Service()
 export class TokenService {
   constructor(
@@ -31,7 +32,8 @@ export class TokenService {
   async generateVerificationToken(user: any) {
     // 2. Use a specific payload for verification
     const payload = { sub: user.id, email: user.email, type: 'verification' };
-    return await this.verifyJwtService.signAsync(payload);
+    const verificationToken = await this.verifyJwtService.signAsync(payload);
+    return verificationToken;
   }
 
   async verifyEmailToken(token: string) {

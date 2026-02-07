@@ -14,6 +14,7 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 import { Resource } from 'src/common/enums/resource.enum';
 import { Role } from '../role/entities/role.entity';
 import { RoleNotFoundException } from 'src/common/exceptions/role-not-found.exception';
+import { TokenService } from 'src/core/security/token/token.service';
 
 
 @Service()
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly userService: UserService, 
     private readonly roleService: RoleService,
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
+    private readonly tokenService: TokenService, // For JWT generation
   ) {}
   create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';
@@ -48,43 +50,51 @@ export class AuthService {
 
   // 1. Register logic
   async register(registerDto: RegisterDto) {
-  const { email, password, firstName, lastName, dateOfBirth } = registerDto;
-  
-  const existingUser = await this.authRepository.findOne({ where: { email } });
-  if (existingUser) {
-    throw new ConflictException(`Email address "${email}" has already been registered.`);
-  }
+    const { email, password, firstName, lastName, dateOfBirth } = registerDto;
+    
+    const existingUser = await this.authRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException(`Email address "${email}" has already been registered.`);
+    }
+    const userPayload = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
+    const hashedPassword = await this.hashService.hash(password);
+    
+    const authPayload = AuthGeneratorUtil.generate({ email, password: hashedPassword });
+    authPayload.user = userPayload; // Cascading will handle the user creation
 
-  const userPayload = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
-  const hashedPassword = await this.hashService.hash(password);
-  
-  const authPayload = AuthGeneratorUtil.generate({ email, password: hashedPassword });
-  authPayload.user = userPayload; // Cascading will handle the user creation
+    // You must create and assign the profile and role instance
+    const profilePayload = ProfileGeneratorUtil.generate({}); // You can pass necessary data if needed
+    userPayload.profile = profilePayload; // Assign the profile to the user
 
-  // You must create and assign the profile and role instance
-  const profilePayload = ProfileGeneratorUtil.generate({}); // You can pass necessary data if needed
-  const roleName = UserRole.USER; // Default role for new users
-  const rolePayload = await this.roleService.findByUserRole(roleName); // You can pass necessary data if needed
-  if (!rolePayload) {
-    throw new RoleNotFoundException(roleName);
-  }
-  userPayload.profile = profilePayload; // Assign the profile to the user
-  userPayload.roles = [rolePayload]; // Assign the role to the user
+    
+    console.log("Generated user payload:", userPayload);
 
-  
-  console.log("Generated user payload:", userPayload);
+    const savedAuth = await this.authRepository.create(authPayload);  
+    
+    // RELOAD: This fetches the Auth AND the User together
+    const auth =  await this.authRepository.findOne({
+      where: { id: savedAuth.id },
+      relations: ['user' , 'user.roles'] // Ensure roles are included
+    });
+    console.log("Newly created auth with user:", auth);
 
-  const savedUser = await this.userService.create(userPayload);
-  const savedAuth = await this.authRepository.create(authPayload);  
+    if (auth?.user) {
+    //Generate verification token and send email (optional)
+      const verificationTokenPayload = { id: auth?.user?.id, email: email};
+      console.log("Generated verification token payload:", verificationTokenPayload);
 
-  
-  // RELOAD: This fetches the Auth AND the User together
-   const auth =  await this.authRepository.findOne({
-    where: { id: savedAuth.id },
-    relations: ['user']
-  });
-  console.log("Newly created auth with user:", auth);
-  return auth;
+      const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
+      console.log("Generated verification token:", verificationToken);
+
+   const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
+    console.log('Updated User with Verification Token:', updatedUser);
+
+    }
+
+        
+
+
+    return auth;
   }
 
   // 2. Login logic

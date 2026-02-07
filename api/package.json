@@ -30,6 +30,7 @@
     "seed": "npx ts-node -P tsconfig.json ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d data-source.ts"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -43,6 +44,8 @@
     "class-validator": "^0.14.3",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
+    "handlebars": "^4.7.8",
+    "nodemailer": "^8.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.7",
@@ -58,6 +61,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
+    "@types/nodemailer": "^7.0.9",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",

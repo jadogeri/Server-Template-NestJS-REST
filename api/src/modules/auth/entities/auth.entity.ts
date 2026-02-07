@@ -25,7 +25,7 @@ export class Auth extends Audit {
   @IsString()
   password: string;
 
-  @Column({ default: true }) // 👈 Set to false to "ban" or deactivate an account
+  @Column({ default: false }) // 👈 Set to false to "ban" or deactivate an account
   isEnabled: boolean;
 
   @Column({ nullable: true, default: null }) // 👈 Set to false to "ban" or deactivate an account
