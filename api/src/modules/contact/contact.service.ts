@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Service } from '../../common/decorators/service.decorator';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 
-@Injectable()
+@Service()
 export class ContactService {
   create(createContactDto: CreateContactDto) {
     return 'This action adds a new contact';

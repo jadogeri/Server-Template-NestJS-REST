@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
@@ -8,14 +8,22 @@ import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
 import { HashingService } from 'src/core/security/hashing/hashing.service';
 import { UserService } from '../user/user.service';
 import { ProfileGeneratorUtil } from 'src/common/utils/profile-generator.util';
+import { Service } from '../../common/decorators/service.decorator';
+import { RoleService } from '../role/role.service';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { Resource } from 'src/common/enums/resource.enum';
+import { Role } from '../role/entities/role.entity';
+import { RoleNotFoundException } from 'src/common/exceptions/role-not-found.exception';
 
-@Injectable()
+
+@Service()
 export class AuthService {
   [x: string]: any;
 
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly userService: UserService, 
+    private readonly roleService: RoleService,
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
   ) {}
   create(createAuthDto: CreateAuthDto) {
@@ -53,9 +61,17 @@ export class AuthService {
   const authPayload = AuthGeneratorUtil.generate({ email, password: hashedPassword });
   authPayload.user = userPayload; // Cascading will handle the user creation
 
-  // You must create and assign the profile instance
+  // You must create and assign the profile and role instance
   const profilePayload = ProfileGeneratorUtil.generate({}); // You can pass necessary data if needed
+  const roleName = UserRole.USER; // Default role for new users
+  const rolePayload = await this.roleService.findByUserRole(roleName); // You can pass necessary data if needed
+  if (!rolePayload) {
+    throw new RoleNotFoundException(roleName);
+  }
   userPayload.profile = profilePayload; // Assign the profile to the user
+  userPayload.roles = [rolePayload]; // Assign the role to the user
+
+  
   console.log("Generated user payload:", userPayload);
 
   const savedUser = await this.userService.create(userPayload);

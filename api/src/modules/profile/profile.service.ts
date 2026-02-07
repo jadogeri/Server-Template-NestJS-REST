@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Service } from '../../common/decorators/service.decorator';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
-@Injectable()
+@Service()
 export class ProfileService {
   create(createProfileDto: CreateProfileDto) {
     return 'This action adds a new profile';
