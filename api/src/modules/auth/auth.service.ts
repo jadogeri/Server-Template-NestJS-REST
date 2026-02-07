@@ -5,9 +5,9 @@ import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
 import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
-import { UserRepository } from '../user/user.repository';
 import { HashingService } from 'src/core/security/hashing/hashing.service';
 import { UserService } from '../user/user.service';
+import { ProfileGeneratorUtil } from 'src/common/utils/profile-generator.util';
 
 @Injectable()
 export class AuthService {
@@ -47,15 +47,19 @@ export class AuthService {
     throw new ConflictException(`Email address "${email}" has already been registered.`);
   }
 
-  const newUser = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
+  const userPayload = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
   const hashedPassword = await this.hashService.hash(password);
   
-  const newAuth = AuthGeneratorUtil.generate({ email, password: hashedPassword });
-  newAuth.user = newUser; // Cascading will handle the user creation
+  const authPayload = AuthGeneratorUtil.generate({ email, password: hashedPassword });
+  authPayload.user = userPayload; // Cascading will handle the user creation
 
+  // You must create and assign the profile instance
+  const profilePayload = ProfileGeneratorUtil.generate({}); // You can pass necessary data if needed
+  userPayload.profile = profilePayload; // Assign the profile to the user
+  console.log("Generated user payload:", userPayload);
 
-  const savedUser = await this.userService.create(newUser);
-  const savedAuth = await this.authRepository.create(newAuth);  
+  const savedUser = await this.userService.create(userPayload);
+  const savedAuth = await this.authRepository.create(authPayload);  
 
   
   // RELOAD: This fetches the Auth AND the User together

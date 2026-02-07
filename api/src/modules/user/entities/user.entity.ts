@@ -38,7 +38,8 @@ export class User extends Audit {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  @OneToOne(() => Profile, (profile) => profile.user)
+  @OneToOne(() => Profile, (profile) => profile.user, { cascade: true }) 
+  // No @JoinColumn here. Cascade still allows user.profile = new Profile() to work.
   profile: Profile;
 
   @OneToOne(() => Auth, (auth) => auth.user)
