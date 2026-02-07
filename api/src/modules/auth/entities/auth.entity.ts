@@ -28,8 +28,8 @@ export class Auth extends Audit {
   @Column({ default: false }) // 👈 Set to false to "ban" or deactivate an account
   isEnabled: boolean;
 
-  @Column({ nullable: true, default: null }) // 👈 Set to false to "ban" or deactivate an account
-  verificationToken: string;
+  @Column({type: 'varchar', nullable: true, default: null }) // 👈 Set to false to "ban" or deactivate an account
+  verificationToken: string | null;
 
   @Column({ default: false })
   isVerified: boolean;
