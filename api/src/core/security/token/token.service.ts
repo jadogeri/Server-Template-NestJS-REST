@@ -26,3 +26,21 @@ export class TokenService {
     return this.refreshJwtService.verifyAsync(token);
   }
 }
+
+/**
+ * 
+ * 
+     @Inject('VERIFY_TOKEN_JWT_SERVICE') private readonly verifyJwtService: JwtService,
+  ) {}
+
+  async generateVerificationToken(user: any) {
+    // 2. Use a specific payload for verification
+    const payload = { sub: user.id, email: user.email, type: 'verification' };
+    return this.verifyJwtService.signAsync(payload);
+  }
+
+  async verifyEmailToken(token: string) {
+    // 3. This will use the verification-specific secret and expiration
+    return this.verifyJwtService.verifyAsync(token);
+  }
+ */

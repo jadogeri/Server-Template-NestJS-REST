@@ -20,6 +20,8 @@ declare global {
             JWT_ACCESS_TOKEN_EXPIRATION_MS: string | number;
             JWT_REFRESH_TOKEN_SECRET: string;
             JWT_REFRESH_TOKEN_EXPIRATION_MS: string | number;
+            JWT_VERIFY_TOKEN_SECRET: string;
+            JWT_VERIFY_TOKEN_EXPIRATION_MS: string | number;
             PORT: string | number;
             ARGON2_MEMORY: string | number;
             ARGON2_ITERATIONS: string | number;
