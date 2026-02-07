@@ -30,6 +30,17 @@ import { TokenService } from './token.service';
       },
       inject: [ConfigService],
     },
+    // Provider for Verification Tokens
+    {
+      provide: 'VERIFY_TOKEN_JWT_SERVICE',
+      useFactory: (config: ConfigService) => {
+        return new JwtService({
+          secret: config.get('JWT_VERIFY_TOKEN_SECRET'),
+          signOptions: { expiresIn: config.get('JWT_VERIFY_TOKEN_EXPIRATION_MS') },
+        });
+      },
+      inject: [ConfigService],
+    },
   ],
   exports: [TokenService],
 })
