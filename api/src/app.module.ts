@@ -9,7 +9,6 @@ import { SessionModule } from './modules/session/session.module';
 import dataSourceOptions from './configs/type-orm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { MailService } from './core/mail/mail.service';
 
 
 @Module({
@@ -25,7 +24,7 @@ import { MailService } from './core/mail/mail.service';
     ConfigModule.forRoot({   isGlobal: true,  }),
   ],
   controllers: [],
-  providers: [MailService],
+  providers: [],
 })
 export class AppModule {}
 

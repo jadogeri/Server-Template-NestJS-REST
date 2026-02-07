@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException, GoneException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
@@ -15,6 +15,11 @@ import { Resource } from 'src/common/enums/resource.enum';
 import { Role } from '../role/entities/role.entity';
 import { RoleNotFoundException } from 'src/common/exceptions/role-not-found.exception';
 import { TokenService } from 'src/core/security/token/token.service';
+import { MailService } from 'src/core/security/mail/mail.service';
+import { log } from 'console';
+import { TokenExpiredError } from '@nestjs/jwt';
+import { AuthNotFoundException } from 'src/common/exceptions/auth-not-found.exception';
+import { Not } from 'typeorm';
 
 
 @Service()
@@ -27,6 +32,7 @@ export class AuthService {
     private readonly roleService: RoleService,
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
     private readonly tokenService: TokenService, // For JWT generation
+    private readonly mailService: MailService, // For sending emails
   ) {}
   create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';
@@ -86,13 +92,24 @@ export class AuthService {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
-   const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
-    console.log('Updated User with Verification Token:', updatedUser);
+     const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
+     console.log('Updated User with Verification Token:', updatedUser);
 
+     // Send verification email using MailService
+     const context = {
+      firstName: auth.user.firstName,
+      verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
+      logoUrl: 'https://cdn.dribbble.com/userupload/41930880/file/original-633d9b239c12bbb0788b9faf25058c54.png', // Optional: Add your logo URL here
+      companyName: 'Your Company Name', // Optional: Add your company name here
+      year: new Date().getFullYear(), // Optional: Add current year for footer
+     };
+     console.log("Email context for Handlebars:", context);
+
+     const result = await this.mailService.sendEmail(email, 'verify-account', context);
+     console.log('Verification email sent to:', email);
+      console.log('Email sending result:', result);
     }
-
-        
-
+    
 
     return auth;
   }
@@ -133,8 +150,79 @@ export class AuthService {
   // 7. Verify Email logic
   async verifyEmail(token: string) {
     // Logic: Verify token, update user status to 'verified' in DB
-    return { message: 'Email verified successfully' };
+  try {
+      const payload = await this.tokenService.verifyEmailToken(token);
+      console.log('Email verification token payload:', payload);
+      const{ id, email } = payload;
+      const userAccount = await this.authRepository.findOne({ where: { user: { id }, email }, relations: ['user'] });
+      if (!userAccount) {
+        return { message:" success" }
+      }
+      if (userAccount.isVerified) {
+       throw new ConflictException({ message: 'Your email is already verified. You can proceed to login.',
+                alreadyVerified: true });
+      }else{
+        await this.authRepository.update(userAccount.id, { isVerified: true, verificationToken:null, verifiedAt: new Date() });
+      }
+      return {payload};
+      // ... update user to verified in DB  
+    } catch (error:unknown) {
+      if (error instanceof TokenExpiredError) {
+        log('Error verifying email token:', error.message);
+        throw new GoneException('Verification link expired. Please request a new one.');
+
+      }
+      log('Error verifying email token:', error instanceof Error ? error.message : error);
+      throw new BadRequestException('Invalid verification token.');
+    }
   }
+// auth.service.ts
+async resendVerification(email: string) {
+  const auth = await this.authRepository.findByEmail(email); //
+  
+  if (!auth) {
+    throw new AuthNotFoundException(email, 'email');
+  }
+  
+  if (auth.isVerified) {
+    throw new BadRequestException('Email is already verified');
+  }
+
+  // Reuse your existing email sending logic here
+
+    console.log("Newly created auth with user:", auth);
+
+    if (!auth?.user) {
+      throw new NotFoundException('User not found for the provided auth information.');
+    }
+    //Generate verification token and send email (optional)
+      const verificationTokenPayload = { id: auth?.user?.id, email: email};
+      console.log("Generated verification token payload:", verificationTokenPayload);
+
+      const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
+      console.log("Generated verification token:", verificationToken);
+
+     const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
+     console.log('Updated User with Verification Token:', updatedUser);
+
+     // Send verification email using MailService
+     const context = {
+      firstName: auth.user.firstName,
+      verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
+      logoUrl: 'https://cdn.dribbble.com/userupload/41930880/file/original-633d9b239c12bbb0788b9faf25058c54.png', // Optional: Add your logo URL here
+      companyName: 'Your Company Name', // Optional: Add your company name here
+      year: new Date().getFullYear(), // Optional: Add current year for footer
+     };
+     console.log("Email context for Handlebars:", context);
+
+     const result = await this.mailService.sendEmail(email, 'verify-account', context);
+     console.log('Verification email sent to:', email);
+      console.log('Email sending result:', result);
+
+  return { message: 'A new verification link has been sent to your email.' };
+
+}
+
 
   // 8. Reactivate logic
   async reactivateAccount(token: string) {
@@ -145,5 +233,6 @@ export class AuthService {
   async unregisterAccount(userId: string) {
     // Logic: Permanently delete user from DB
     return { message: `Account ${userId} permanently deleted` };
-  }
+  }    
 }
+

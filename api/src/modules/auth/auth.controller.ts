@@ -1,11 +1,13 @@
-import { Controller,Get, Post, Body, Patch, Delete, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller,Get, Post, Body, Patch, Delete, Request, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ReactivateDto } from './dto/auth.dto';
 //import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Assume standard JWT Guard
 
 
 import { AuthService } from './auth.service';
-import { ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiBody, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { TokenValidationPipe } from 'src/common/pipes/token-validation.pipe';
+import { EmailValidationPipe } from 'src/common/pipes/email-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -93,9 +95,20 @@ export class AuthController {
    * Uses POST because it modifies the user's verification state.
    */
   @HttpCode(HttpStatus.OK)
-  @Post('verify-email')
-  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+  @ApiOperation({ summary: 'Verify user email via token' })
+  @ApiQuery({ name: 'token', type: String, description: 'The unique verification hash' }) // This adds it to Swagger
+  @Get('verify-email')
+  async verifyEmail(@Query('token', TokenValidationPipe)  token: string) {
     // verifyEmailDto.token will contain the token from the URL
-    return await this.authService.verifyEmail(verifyEmailDto.token);
+    console.log('Received email verification token:', token);
+    return await this.authService.verifyEmail(token);
+  }
+
+  @Post('resend-verification')
+  async resendVerification(
+    @Body('email', EmailValidationPipe) email: string // Validation happens here
+  ) {
+    console.log('Validating resend request for:', email);
+    return await this.authService.resendVerification(email);
   }
 }
