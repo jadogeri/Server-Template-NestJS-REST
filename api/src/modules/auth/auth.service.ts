@@ -9,11 +9,11 @@ import { ProfileGeneratorUtil } from '../../common/utils/profile-generator.util'
 import { Service } from '../../common/decorators/service.decorator';
 import { RoleService } from '../role/role.service';
 import { TokenService } from '../../core/security/token/token.service';
-import { MailService } from '../../core/security/mail/mail.service';
+import { MailService } from '../../core/infrastructure/mail/mail.service';
 import { log } from 'console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
-import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
+import { VerificationEmailContext } from 'src/core/infrastructure/mail/interfaces/mail-context.interface';
 
 @Service()
 export class AuthService {

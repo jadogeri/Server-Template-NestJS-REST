@@ -7,10 +7,9 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { HashingService } from '../../core/security/hashing/hashing.service';
 import { UserModule } from '../user/user.module';
 import { RoleModule } from '../role/role.module';
-import { SecurityModule } from '../../core/security/security.module';
 
 @Module({
-  imports: [SecurityModule, UserModule, RoleModule, TypeOrmModule.forFeature([Auth])],
+  imports: [ UserModule, RoleModule, TypeOrmModule.forFeature([Auth])],
   controllers: [AuthController],
   providers: [HashingService, AuthService, AuthRepository],
   exports: [AuthService, AuthRepository],

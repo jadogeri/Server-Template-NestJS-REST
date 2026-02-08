@@ -9,10 +9,12 @@ import { SessionModule } from './modules/session/session.module';
 import dataSourceOptions from './configs/type-orm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { CoreModule } from './core/core.module';
 
 
 @Module({
   imports: [
+    CoreModule,
     UserModule, 
     AuthModule, 
     SessionModule, 

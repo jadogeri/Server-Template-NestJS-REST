@@ -5,7 +5,7 @@ import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
 import { HashingService } from '../../core/security/hashing/hashing.service';
 import { TokenService } from '../../core/security/token/token.service';
-import { MailService } from '../../core/security/mail/mail.service';
+import { MailService } from '../../core/infrastructure/mail/mail.service';
 
 describe('AuthService', () => {
   let service: AuthService;
