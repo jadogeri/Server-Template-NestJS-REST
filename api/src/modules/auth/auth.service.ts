@@ -15,10 +15,8 @@ import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
 import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
 
-
 @Service()
 export class AuthService {
-  [x: string]: any;
 
   constructor(
     private readonly authRepository: AuthRepository,
@@ -38,24 +36,18 @@ export class AuthService {
       throw new ConflictException(`Email address "${email}" has already been registered.`);
     }
     const userPayload = UserGeneratorUtil.generate({ firstName, lastName, dateOfBirth });
-    const hashedPassword = await this.hashService.hash(password);
-    
+    const hashedPassword = await this.hashService.hash(password);    
     const authPayload = AuthGeneratorUtil.generate({ email, password: hashedPassword });
     authPayload.user = userPayload; // Cascading will handle the user creation
 
-    // You must create and assign the profile and role instance
     const profilePayload = ProfileGeneratorUtil.generate({}); // You can pass necessary data if needed
     userPayload.profile = profilePayload; // Assign the profile to the user
-
-    
-    console.log("Generated user payload:", userPayload);
 
     const savedAuth = await this.authRepository.create(authPayload);  
     
     // RELOAD: This fetches the Auth AND the User together
     const auth =  await this.authRepository.findOne({
-      where: { id: savedAuth.id },
-      relations: ['user' , 'user.roles'] // Ensure roles are included
+      where: { id: savedAuth.id }, relations: ['user' , 'user.roles'] // Ensure roles are included
     });
     console.log("Newly created auth with user:", auth);
 
@@ -67,20 +59,14 @@ export class AuthService {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
-     //const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
-     //console.log('Updated User with Verification Token:', updatedUser);
-
      const context : VerificationEmailContext = {
       firstName: auth.user.firstName,      
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
-     const result = await this.mailService.sendVerificationEmail(email, context);
-     
+     await this.mailService.sendVerificationEmail(email, context);     
      console.log('Verification email sent to:', email);
-      console.log('Email sending result:', result);
     }    
-
-    return auth;
+    throw new NotFoundException('User acocount not created successfully.');
   }
 
   // 2. Login logic
