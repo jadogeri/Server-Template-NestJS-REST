@@ -1,18 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EntityManager } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm'; // Add this
 import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 
 describe('UserRepository', () => {
   let repository: UserRepository;
-  let entityManager: EntityManager;
 
-  // Create a mock for EntityManager
-  const mockEntityManager = {
+  // Mock for the actual TypeORM Repository injected into your class
+  const mockTypeOrmRepo = {
     findOne: jest.fn(),
-    // BaseRepository needs these to initialize
-    connection: { registry: { get: jest.fn() } },
-    queryRunner: {},
+    // add any other methods the BaseRepository calls
   };
 
   beforeEach(async () => {
@@ -20,45 +17,89 @@ describe('UserRepository', () => {
       providers: [
         UserRepository,
         {
-          provide: EntityManager,
-          useValue: mockEntityManager,
+          // This creates the token Nest is looking for in your constructor
+          provide: getRepositoryToken(User),
+          useValue: mockTypeOrmRepo,
         },
       ],
     }).compile();
 
     repository = module.get<UserRepository>(UserRepository);
-    entityManager = module.get<EntityManager>(EntityManager);
   });
 
-  it('should be defined', () => {
-    expect(repository).toBeDefined();
-  });
+describe('UserRepository', () => {
+  // ... existing setup from previous response ...
 
-  describe('findByEmail', () => {
-    it('should call findOne with correct email filter', async () => {
-      const email = 'test@example.com';
-      const userMock = { id: 1, email } as User;
-      
-      // Mock the findOne method inherited from BaseRepository
-      jest.spyOn(repository, 'findOne').mockResolvedValue(userMock);
+  describe('findByLastName', () => {
+    it('should return a user when the last Name exists (Happy Path)', async () => {
+      const lastName = 'Doe';
+      const userMock = { id: 1, lastName: 'Doe' } as User;
+      mockTypeOrmRepo.findOne.mockResolvedValue(userMock);
 
-      const result = await repository.findByEmail(email);
+      const result = await repository.findOne({ where: { lastName: 'Doe' } });
 
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { email } });
       expect(result).toEqual(userMock);
+      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({ where: { lastName: 'Doe' } });
+    });
+
+    it('should return null when the lastName does not exist (Negative Path)', async () => {
+      mockTypeOrmRepo.findOne.mockResolvedValue(null);
+
+      const result = await repository.findOne({ where: { lastName: 'missing' } });
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle unusual first name formats (Edge Case)', async () => {
+      const weirdFirstName= 'JOhn';
+      mockTypeOrmRepo.findOne.mockResolvedValue({ firstName: weirdFirstName } as User);
+
+      const result = await repository.findByFirstName(weirdFirstName);
+      
+      expect(result?.firstName).toBe(weirdFirstName);
     });
   });
 
-  describe('findByUsername', () => {
-    it('should call findOne with firstName filter', async () => {
-      const username = 'John';
-      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+  describe('findByUserId', () => {
+    it('should fetch user with roles and permissions (Happy Path)', async () => {
+      const userId = 99;
+      // Injected mock for findOne (used by findOneById in your BaseRepository)
+      mockTypeOrmRepo.findOne.mockResolvedValue({ id: userId, roles: [] });
 
-      await repository.findByUsername(username);
+      await repository.findByUserId(userId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({ 
-        where: { firstName: username } 
+      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: userId },
+        relations: ['roles', 'roles.permissions'],
+      }));
+    });
+
+    it('should return null for non-existent ID (Negative Path)', async () => {
+      mockTypeOrmRepo.findOne.mockResolvedValue(null);
+      const result = await repository.findByUserId(9999);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('Database Resilience (Edge Cases)', () => {
+    it('should throw an error if the database connection is lost', async () => {
+      mockTypeOrmRepo.findOne.mockRejectedValue(new Error('QueryFailedError: connection lost'));
+
+      await expect(repository.findByFirstName('john'))
+        .rejects.toThrow('QueryFailedError: connection lost');
+    });
+
+    it('should handle extremely long string inputs', async () => {
+      const longName = 'a'.repeat(255);
+      mockTypeOrmRepo.findOne.mockResolvedValue(null);
+
+      await repository.findByFirstName(longName);
+      
+      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({ 
+        where: { firstName: longName } 
       });
     });
   });
+});
+
 });

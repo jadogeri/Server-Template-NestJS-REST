@@ -6,8 +6,8 @@ import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmail
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiBody, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { TokenValidationPipe } from 'src/common/pipes/token-validation.pipe';
-import { EmailValidationPipe } from 'src/common/pipes/email-validation.pipe';
+import { TokenValidationPipe } from '../../common/pipes/token-validation.pipe';
+import { EmailValidationPipe } from '../../common/pipes/email-validation.pipe';
 
 @Controller('auth')
 export class AuthController {

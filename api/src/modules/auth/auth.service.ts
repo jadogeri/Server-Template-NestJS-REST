@@ -1,25 +1,19 @@
 import { BadRequestException, ConflictException, GoneException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
 import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
-import { HashingService } from 'src/core/security/hashing/hashing.service';
+import { HashingService } from '../../core/security/hashing/hashing.service';
 import { UserService } from '../user/user.service';
-import { ProfileGeneratorUtil } from 'src/common/utils/profile-generator.util';
+import { ProfileGeneratorUtil } from '../../common/utils/profile-generator.util';
 import { Service } from '../../common/decorators/service.decorator';
 import { RoleService } from '../role/role.service';
-import { UserRole } from 'src/common/enums/user-role.enum';
-import { Resource } from 'src/common/enums/resource.enum';
-import { Role } from '../role/entities/role.entity';
-import { RoleNotFoundException } from 'src/common/exceptions/role-not-found.exception';
-import { TokenService } from 'src/core/security/token/token.service';
-import { MailService } from 'src/core/security/mail/mail.service';
+import { TokenService } from '../../core/security/token/token.service';
+import { MailService } from '../../core/security/mail/mail.service';
 import { log } from 'console';
 import { TokenExpiredError } from '@nestjs/jwt';
-import { AuthNotFoundException } from 'src/common/exceptions/auth-not-found.exception';
-import { Not } from 'typeorm';
+import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
+import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
 
 
 @Service()
@@ -34,26 +28,7 @@ export class AuthService {
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
   ) {}
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
-
-  async findAll() {
-    return await this.authRepository.findAll();
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
-
+ 
   // 1. Register logic
   async register(registerDto: RegisterDto) {
     const { email, password, firstName, lastName, dateOfBirth } = registerDto;
@@ -92,24 +67,18 @@ export class AuthService {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
-     const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
-     console.log('Updated User with Verification Token:', updatedUser);
+     //const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
+     //console.log('Updated User with Verification Token:', updatedUser);
 
-     // Send verification email using MailService
-     const context = {
-      firstName: auth.user.firstName,
+     const context : VerificationEmailContext = {
+      firstName: auth.user.firstName,      
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
-      logoUrl: 'https://cdn.dribbble.com/userupload/41930880/file/original-633d9b239c12bbb0788b9faf25058c54.png', // Optional: Add your logo URL here
-      companyName: 'Your Company Name', // Optional: Add your company name here
-      year: new Date().getFullYear(), // Optional: Add current year for footer
      };
-     console.log("Email context for Handlebars:", context);
-
-     const result = await this.mailService.sendEmail(email, 'verify-account', context);
+     const result = await this.mailService.sendVerificationEmail(email, context);
+     
      console.log('Verification email sent to:', email);
       console.log('Email sending result:', result);
-    }
-    
+    }    
 
     return auth;
   }
@@ -206,17 +175,13 @@ async resendVerification(email: string) {
      console.log('Updated User with Verification Token:', updatedUser);
 
      // Send verification email using MailService
-     const context = {
+     const context : VerificationEmailContext = {
       firstName: auth.user.firstName,
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
-      logoUrl: 'https://cdn.dribbble.com/userupload/41930880/file/original-633d9b239c12bbb0788b9faf25058c54.png', // Optional: Add your logo URL here
-      companyName: 'Your Company Name', // Optional: Add your company name here
-      year: new Date().getFullYear(), // Optional: Add current year for footer
      };
      console.log("Email context for Handlebars:", context);
 
-     const result = await this.mailService.sendEmail(email, 'verify-account', context);
-     console.log('Verification email sent to:', email);
+     const result = await this.mailService.sendVerificationEmail(email, context);
       console.log('Email sending result:', result);
 
   return { message: 'A new verification link has been sent to your email.' };
