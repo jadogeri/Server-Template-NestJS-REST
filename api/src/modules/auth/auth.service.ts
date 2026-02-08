@@ -14,6 +14,7 @@ import { log } from 'console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
 import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
+import { SmsService } from 'src/core/security/sms/sms.service';
 
 
 @Service()
@@ -27,6 +28,7 @@ export class AuthService {
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
+    private readonly smsService: SmsService, // For sending SMS
   ) {}
  
   // 1. Register logic
@@ -75,6 +77,7 @@ export class AuthService {
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
      const result = await this.mailService.sendVerificationEmail(email, context);
+     await this.smsService.sendSms("5045414308", `Welcome ${auth.user.firstName}! Please verify your email: ${context.verificationLink}`);
      
      console.log('Verification email sent to:', email);
       console.log('Email sending result:', result);
@@ -182,6 +185,7 @@ async resendVerification(email: string) {
      console.log("Email context for Handlebars:", context);
 
      const result = await this.mailService.sendVerificationEmail(email, context);
+      await this.smsService.sendSms("5045414308", `Hello ${auth.user.firstName}! Please verify your email: ${context.verificationLink}`);
       console.log('Email sending result:', result);
 
   return { message: 'A new verification link has been sent to your email.' };
