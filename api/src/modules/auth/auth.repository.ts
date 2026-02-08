@@ -16,6 +16,9 @@ export class AuthRepository extends BaseRepository<Auth> {
 
   // Add domain-specific methods
   async findByEmail(email: string) {
-    return this.findOne({ where: { email } as any });
+    return this.findOne({ 
+      where: { email } as any ,
+      relations: ['user'], // Eager load the related User entity
+    });
   }
 }

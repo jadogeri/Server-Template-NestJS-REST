@@ -3,6 +3,7 @@ import { IsUserEmail } from '../../../common/decorators/validators/is-email.deco
 import { IsFormattedDate } from '../../../common/decorators/validators/is-formatted-date.decorator';
 import { IsSecuredPassword } from '../../../common/decorators/validators/is-secured-password.decorator';
 import { IsName } from '../../../common/decorators/validators/is-name.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
 
@@ -49,6 +50,10 @@ export class ResetPasswordDto {
 
 
 export class VerifyEmailDto {
+  @ApiProperty({ 
+    description: 'The unique verification hash',
+    example: '92b7a96fd0d31d7e4ae908e82eff6fb19e422eb0' 
+  })
   @IsString()
   @IsNotEmpty()
   token: string;

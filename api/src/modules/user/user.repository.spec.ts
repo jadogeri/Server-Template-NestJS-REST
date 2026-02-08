@@ -1,18 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EntityManager } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 
 describe('UserRepository', () => {
-  let repository: UserRepository;
-  let entityManager: EntityManager;
+  let userRepository: UserRepository;
+  let typeOrmRepo: Repository<User>;
 
-  // Create a mock for EntityManager
-  const mockEntityManager = {
+  const mockTypeOrmRepo = {
+    find: jest.fn(),
     findOne: jest.fn(),
-    // BaseRepository needs these to initialize
-    connection: { registry: { get: jest.fn() } },
-    queryRunner: {},
+    create: jest.fn(),
+    save: jest.fn(),
+    preload: jest.fn(),
+    delete: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -20,45 +22,94 @@ describe('UserRepository', () => {
       providers: [
         UserRepository,
         {
-          provide: EntityManager,
-          useValue: mockEntityManager,
+          provide: getRepositoryToken(User),
+          useValue: mockTypeOrmRepo,
         },
       ],
     }).compile();
 
-    repository = module.get<UserRepository>(UserRepository);
-    entityManager = module.get<EntityManager>(EntityManager);
+    userRepository = module.get<UserRepository>(UserRepository);
+    typeOrmRepo = module.get<Repository<User>>(getRepositoryToken(User));
+    
+    // Silence logs for cleaner test output
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
-    expect(repository).toBeDefined();
+    expect(userRepository).toBeDefined();
   });
 
-  describe('findByEmail', () => {
-    it('should call findOne with correct email filter', async () => {
-      const email = 'test@example.com';
-      const userMock = { id: 1, email } as User;
-      
-      // Mock the findOne method inherited from BaseRepository
-      jest.spyOn(repository, 'findOne').mockResolvedValue(userMock);
+  describe('findByUserId', () => {
+    it('should call findOne with specific relations', async () => {
+      const mockUser = { id: 1, firstName: 'John' };
+      mockTypeOrmRepo.findOne.mockResolvedValue(mockUser);
 
-      const result = await repository.findByEmail(email);
+      const result = await userRepository.findByUserId(1);
 
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { email } });
-      expect(result).toEqual(userMock);
+      // Matches the structure sent to this.repository.findOne() in BaseRepository
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['roles', 'roles.permissions'],
+      });
+      expect(result).toEqual(mockUser);
     });
   });
 
-  describe('findByUsername', () => {
-    it('should call findOne with firstName filter', async () => {
-      const username = 'John';
-      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-
-      await repository.findByUsername(username);
-
-      expect(repository.findOne).toHaveBeenCalledWith({ 
-        where: { firstName: username } 
+  describe('findByFirstName', () => {
+    it('should filter by first name', async () => {
+      const name = 'Jane';
+      await userRepository.findByFirstName(name);
+      
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { firstName: name },
       });
+    });
+  });
+
+  describe('update', () => {
+    it('should preload and save data if entity exists', async () => {
+      const updateData = { firstName: 'Updated' };
+      const preloadedUser = { id: 1, ...updateData };
+
+      mockTypeOrmRepo.preload.mockResolvedValue(preloadedUser);
+      mockTypeOrmRepo.save.mockResolvedValue(preloadedUser);
+
+      const result = await userRepository.update(1, updateData);
+
+      expect(typeOrmRepo.preload).toHaveBeenCalledWith({
+        id: 1,
+        ...updateData,
+      });
+      expect(typeOrmRepo.save).toHaveBeenCalledWith(preloadedUser);
+      expect(result).toEqual(preloadedUser);
+    });
+
+    it('should return null if preload fails', async () => {
+      mockTypeOrmRepo.preload.mockResolvedValue(null);
+
+      const result = await userRepository.update(999, { firstName: 'NoOne' });
+
+      expect(result).toBeNull();
+      expect(typeOrmRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('create', () => {
+    it('should create and save a new user', async () => {
+      const userData = { firstName: 'Alice', email: 'alice@test.com' };
+      mockTypeOrmRepo.create.mockReturnValue(userData);
+      mockTypeOrmRepo.save.mockResolvedValue({ id: 1, ...userData });
+
+      const result = await userRepository.create(userData);
+
+      expect(typeOrmRepo.create).toHaveBeenCalledWith(userData);
+      expect(typeOrmRepo.save).toHaveBeenCalledWith(userData);
+      expect(result.id).toBe(1);
     });
   });
 });
