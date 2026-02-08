@@ -6,7 +6,8 @@ import { MailModule } from './mail/mail.module';
 
 //@Global() // Optional: Makes Hashing & Token services available everywhere
 @Module({
-  imports: [HashingModule, TokenModule, MailModule],
-  exports: [HashingModule, TokenModule, MailModule],
+  imports: [HashingModule, TokenModule, MailModule, SmsModule],
+  exports: [HashingModule, TokenModule, MailModule, SmsModule], // Export services for use in other modules
+  providers: [],
 })
 export class SecurityModule {}
