@@ -46,7 +46,7 @@ export class AuthController {
 
     @Get('/me')
   me(@Request() req) {
-    return this.authService.findAll();
+    return { message: 'This is a protected route', user: req.user };
   }
 
 

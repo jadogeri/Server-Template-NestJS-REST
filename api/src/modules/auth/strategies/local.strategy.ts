@@ -13,8 +13,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     });
   }
 
-  async validate(email: string, password: string): Promise<UserPayload | null> {
-    console.log('Validating user in LocalStrategy with email:', email);
+  async validate(email: string, password: string): Promise<void> {
+  //Promise<UserPayload | null> {
+    /*console.log('Validating user in LocalStrategy with email:', email);
     console.log('Password received for validation:', password );
     const user = await this.authService.verifyUser(email, password);
     if (!user) {
@@ -39,5 +40,6 @@ const permissionSet = new Set<Permission>();
       permissions: uniquePermissions,
     };
     return userPayload;
+    */
   }
 }
