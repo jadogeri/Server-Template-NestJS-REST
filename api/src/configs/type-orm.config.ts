@@ -26,8 +26,8 @@ export const dataSourceOptions: TypeOrmModuleOptions & SeederOptions = {
     // 🔍 Check these paths carefully!
 
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../core/database/migrations/*{.ts,.js}'],
-  subscribers: [__dirname + '/../core/database/subscribers/*{.ts,.js}'],
+  migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+  subscribers: [__dirname + '/../database/subscribers/*{.ts,.js}'],
   // seeds: [UserSeeder],
   // factories: [UserFactory],
   synchronize: !isProduction,
