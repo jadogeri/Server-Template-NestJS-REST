@@ -25,11 +25,12 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findByUserId(userId: number): Promise<User | null> {
-    const user = await this.findOneById({
-      where: { id: userId },
-      relations: ['roles', 'roles.permissions'],
-    });
-    return user;
-  }
+  // Use findOne instead of findOneById to pass the custom options correctly
+  return await this.findOne({
+    where: { id: userId } as any,
+    relations: ['roles', 'roles.permissions'],
+  });
+}
+
   
 }

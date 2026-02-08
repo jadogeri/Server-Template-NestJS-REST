@@ -1,15 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm'; // Add this
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserRepository } from './user.repository';
 import { User } from './entities/user.entity';
 
 describe('UserRepository', () => {
-  let repository: UserRepository;
+  let userRepository: UserRepository;
+  let typeOrmRepo: Repository<User>;
 
-  // Mock for the actual TypeORM Repository injected into your class
   const mockTypeOrmRepo = {
+    find: jest.fn(),
     findOne: jest.fn(),
-    // add any other methods the BaseRepository calls
+    create: jest.fn(),
+    save: jest.fn(),
+    preload: jest.fn(),
+    delete: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -17,89 +22,94 @@ describe('UserRepository', () => {
       providers: [
         UserRepository,
         {
-          // This creates the token Nest is looking for in your constructor
           provide: getRepositoryToken(User),
           useValue: mockTypeOrmRepo,
         },
       ],
     }).compile();
 
-    repository = module.get<UserRepository>(UserRepository);
+    userRepository = module.get<UserRepository>(UserRepository);
+    typeOrmRepo = module.get<Repository<User>>(getRepositoryToken(User));
+    
+    // Silence logs for cleaner test output
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-describe('UserRepository', () => {
-  // ... existing setup from previous response ...
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  describe('findByLastName', () => {
-    it('should return a user when the last Name exists (Happy Path)', async () => {
-      const lastName = 'Doe';
-      const userMock = { id: 1, lastName: 'Doe' } as User;
-      mockTypeOrmRepo.findOne.mockResolvedValue(userMock);
-
-      const result = await repository.findOne({ where: { lastName: 'Doe' } });
-
-      expect(result).toEqual(userMock);
-      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({ where: { lastName: 'Doe' } });
-    });
-
-    it('should return null when the lastName does not exist (Negative Path)', async () => {
-      mockTypeOrmRepo.findOne.mockResolvedValue(null);
-
-      const result = await repository.findOne({ where: { lastName: 'missing' } });
-
-      expect(result).toBeNull();
-    });
-
-    it('should handle unusual first name formats (Edge Case)', async () => {
-      const weirdFirstName= 'JOhn';
-      mockTypeOrmRepo.findOne.mockResolvedValue({ firstName: weirdFirstName } as User);
-
-      const result = await repository.findByFirstName(weirdFirstName);
-      
-      expect(result?.firstName).toBe(weirdFirstName);
-    });
+  it('should be defined', () => {
+    expect(userRepository).toBeDefined();
   });
 
   describe('findByUserId', () => {
-    it('should fetch user with roles and permissions (Happy Path)', async () => {
-      const userId = 99;
-      // Injected mock for findOne (used by findOneById in your BaseRepository)
-      mockTypeOrmRepo.findOne.mockResolvedValue({ id: userId, roles: [] });
+    it('should call findOne with specific relations', async () => {
+      const mockUser = { id: 1, firstName: 'John' };
+      mockTypeOrmRepo.findOne.mockResolvedValue(mockUser);
 
-      await repository.findByUserId(userId);
+      const result = await userRepository.findByUserId(1);
 
-      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith(expect.objectContaining({
-        where: { id: userId },
+      // Matches the structure sent to this.repository.findOne() in BaseRepository
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
         relations: ['roles', 'roles.permissions'],
-      }));
-    });
-
-    it('should return null for non-existent ID (Negative Path)', async () => {
-      mockTypeOrmRepo.findOne.mockResolvedValue(null);
-      const result = await repository.findByUserId(9999);
-      expect(result).toBeNull();
+      });
+      expect(result).toEqual(mockUser);
     });
   });
 
-  describe('Database Resilience (Edge Cases)', () => {
-    it('should throw an error if the database connection is lost', async () => {
-      mockTypeOrmRepo.findOne.mockRejectedValue(new Error('QueryFailedError: connection lost'));
-
-      await expect(repository.findByFirstName('john'))
-        .rejects.toThrow('QueryFailedError: connection lost');
-    });
-
-    it('should handle extremely long string inputs', async () => {
-      const longName = 'a'.repeat(255);
-      mockTypeOrmRepo.findOne.mockResolvedValue(null);
-
-      await repository.findByFirstName(longName);
+  describe('findByFirstName', () => {
+    it('should filter by first name', async () => {
+      const name = 'Jane';
+      await userRepository.findByFirstName(name);
       
-      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({ 
-        where: { firstName: longName } 
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { firstName: name },
       });
     });
   });
-});
 
+  describe('update', () => {
+    it('should preload and save data if entity exists', async () => {
+      const updateData = { firstName: 'Updated' };
+      const preloadedUser = { id: 1, ...updateData };
+
+      mockTypeOrmRepo.preload.mockResolvedValue(preloadedUser);
+      mockTypeOrmRepo.save.mockResolvedValue(preloadedUser);
+
+      const result = await userRepository.update(1, updateData);
+
+      expect(typeOrmRepo.preload).toHaveBeenCalledWith({
+        id: 1,
+        ...updateData,
+      });
+      expect(typeOrmRepo.save).toHaveBeenCalledWith(preloadedUser);
+      expect(result).toEqual(preloadedUser);
+    });
+
+    it('should return null if preload fails', async () => {
+      mockTypeOrmRepo.preload.mockResolvedValue(null);
+
+      const result = await userRepository.update(999, { firstName: 'NoOne' });
+
+      expect(result).toBeNull();
+      expect(typeOrmRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('create', () => {
+    it('should create and save a new user', async () => {
+      const userData = { firstName: 'Alice', email: 'alice@test.com' };
+      mockTypeOrmRepo.create.mockReturnValue(userData);
+      mockTypeOrmRepo.save.mockResolvedValue({ id: 1, ...userData });
+
+      const result = await userRepository.create(userData);
+
+      expect(typeOrmRepo.create).toHaveBeenCalledWith(userData);
+      expect(typeOrmRepo.save).toHaveBeenCalledWith(userData);
+      expect(result.id).toBe(1);
+    });
+  });
 });

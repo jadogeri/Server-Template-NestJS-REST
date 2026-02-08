@@ -37,23 +37,25 @@ describe('AuthRepository', () => {
     expect(repository).toBeDefined();
   });
 
-  describe('findByEmail', () => {
+   describe('findByEmail', () => {
     it('should call findOne with the correct email criteria', async () => {
       const email = 'test@example.com';
-      const mockAuth = { id: 1, email } as Auth;
+      const mockAuth = { id: 1, email, user: { id: 10 } };
       
-      // Setup the mock return value
-      jest.spyOn(typeOrmRepo, 'findOne').mockResolvedValue(mockAuth);
+      mockTypeOrmRepository.findOne.mockResolvedValue(mockAuth);
 
       const result = await repository.findByEmail(email);
 
-      // Verify the underlying TypeORM method was called correctly
+      // FIX: Add relations to the expectation to match the actual code
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { email },
+        relations: ['user'], 
       });
+      
       expect(result).toEqual(mockAuth);
     });
   });
+
 
   describe('Inherited BaseRepository methods', () => {
     it('should call findAll via the base repository', async () => {
