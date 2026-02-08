@@ -1,10 +1,11 @@
 // src/core/mail/mail.module.ts
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+// REMOVE the HandlebarsAdapter import
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { join } from 'node:path';
 import { SmsService } from './sms.service';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { join } from 'node:path';
 
 @Module({
   imports: [
@@ -34,6 +35,6 @@ import { SmsService } from './sms.service';
     }),
   ],
   exports: [SmsService],
-  providers: [SmsService], // <--- ADD THIS
+  providers: [SmsService],
 })
 export class SmsModule {}

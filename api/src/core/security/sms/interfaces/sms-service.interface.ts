@@ -1,4 +1,4 @@
 export interface SmsServiceInterface {
 
-  sendSms(phoneNumber: string, message: string): Promise<void>;
+  sendSms(phoneNumber: string,folder: string, message: string): Promise<void>;
 }

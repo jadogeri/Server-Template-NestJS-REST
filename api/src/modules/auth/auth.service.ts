@@ -77,7 +77,7 @@ export class AuthService {
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
      const result = await this.mailService.sendVerificationEmail(email, context);
-     await this.smsService.sendSms("5045414308", `Welcome ${auth.user.firstName}! Please verify your email: ${context.verificationLink}`);
+     await this.smsService.sendVerificationSms("5045414308", context);
      
      console.log('Verification email sent to:', email);
       console.log('Email sending result:', result);
@@ -185,7 +185,7 @@ async resendVerification(email: string) {
      console.log("Email context for Handlebars:", context);
 
      const result = await this.mailService.sendVerificationEmail(email, context);
-      await this.smsService.sendSms("5045414308", `Hello ${auth.user.firstName}! Please verify your email: ${context.verificationLink}`);
+      await this.smsService.sendVerificationSms("5045414308", context);
       console.log('Email sending result:', result);
 
   return { message: 'A new verification link has been sent to your email.' };
