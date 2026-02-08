@@ -1,6 +1,7 @@
-import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
+import { PipeTransform, BadRequestException } from '@nestjs/common';
+import { Pipe } from '../decorators/pipe.decorator';
 
-@Injectable()
+@Pipe()
 export class TokenValidationPipe implements PipeTransform {
   transform(value: any) {
     // 1. Basic check: Is it missing?
