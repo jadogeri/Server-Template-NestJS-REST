@@ -14,7 +14,6 @@ import { log } from 'console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
 import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
-import { SmsService } from 'src/core/security/sms/sms.service';
 
 
 @Service()
@@ -28,7 +27,6 @@ export class AuthService {
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
-    private readonly smsService: SmsService, // For sending SMS
   ) {}
  
   // 1. Register logic
@@ -77,7 +75,6 @@ export class AuthService {
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
      const result = await this.mailService.sendVerificationEmail(email, context);
-     await this.smsService.sendVerificationSms("5045414308", context);
      
      console.log('Verification email sent to:', email);
       console.log('Email sending result:', result);
@@ -134,7 +131,7 @@ export class AuthService {
        throw new ConflictException({ message: 'Your email is already verified. You can proceed to login.',
                 alreadyVerified: true });
       }else{
-        await this.authRepository.update(userAccount.id, { isVerified: true, verificationToken:null, verifiedAt: new Date() });
+        await this.authRepository.update(userAccount.id, { isEnabled: true, verificationToken:null, verifiedAt: new Date() });
       }
       return {payload};
       // ... update user to verified in DB  
@@ -185,7 +182,6 @@ async resendVerification(email: string) {
      console.log("Email context for Handlebars:", context);
 
      const result = await this.mailService.sendVerificationEmail(email, context);
-      await this.smsService.sendVerificationSms("5045414308", context);
       console.log('Email sending result:', result);
 
   return { message: 'A new verification link has been sent to your email.' };

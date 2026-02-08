@@ -30,7 +30,7 @@ export class User extends Audit {
 
   @Column({ type: 'date', nullable: true })
   dateOfBirth: Date;
-
+  
   // Virtual Property
   @ApiProperty({ example: 'John Doe', description: 'The combined first and last name' })
   @Expose()
@@ -59,15 +59,4 @@ export class User extends Audit {
   })
   roles: Role[];
 
-
-
-//   @ApiProperty({ example: '000-00-0000', description: 'Social Security Number (Auto-generated)' })
-//   @Column()
-//   @IsString()
-//   ssn: string;
-
-//   @BeforeInsert()
-//   generateSSN() {
-//     this.ssn = faker.string.numeric('###-##-####');
-//   }
 }
