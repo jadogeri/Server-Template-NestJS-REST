@@ -1,6 +1,7 @@
-import { Controller,Get, Post, Body, Patch, Delete, Request, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common';
+import { Controller,Get, Post, Body, Patch, Delete, HttpCode, HttpStatus, Query, UseGuards, Req } from '@nestjs/common';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ReactivateDto } from './dto/auth.dto';
 //import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Assume standard JWT Guard
+import type { Request } from 'express';
 
 
 import { AuthService } from './auth.service';
@@ -43,15 +44,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate user and return JWT token' })
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async signIn(@User() user: UserPayload): Promise<any> {
+  async signIn(@User() user: UserPayload, @Req() request: Request): Promise<any> {
     console.log("AuthController: Received login request for:", user.email);
     console.log("AuthController: Passing to AuthService.signIn", user);
-    return this.authService.login(user);
+    return this.authService.login(request ,user);
   }
 
 
     @Get('/me')
-  async me(@Request() req) {
+  async me(@Req() req: Request) {
     return { message: 'This is a protected route', user: req.user };
   }
 
@@ -59,7 +60,7 @@ export class AuthController {
   // 3. Logout: POST /auth/logout (Requires JWT)
   //@UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Request() req) {
+  async logout(@Req() req: Request) {
     return this.authService.logout(req.user);
   }
 
@@ -78,7 +79,7 @@ export class AuthController {
   // 6. Deactivate User: PATCH /auth/deactivate (Requires JWT)
   //@UseGuards(JwtAuthGuard)
   @Patch('deactivate')
-  async deactivate(@Request() req) {
+  async deactivate(@Req() req: Request) {
     return this.authService.deactivateUser(req.user.id);
     
   }
@@ -86,7 +87,7 @@ export class AuthController {
     // 2. Permanent Delete
   //@UseGuards(JwtAuthGuard)
   @Delete('unregister')
-  async unregister(@Request() req) {
+  async unregister(@Req() req: Request) {
     return this.authService.unregisterAccount(req.user.id);
   }
 

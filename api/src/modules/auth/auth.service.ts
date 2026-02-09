@@ -17,6 +17,9 @@ import { VerificationEmailContext } from 'src/core/infrastructure/mail/interface
 import { User } from '../user/entities/user.entity';
 import { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { SessionService } from '../session/session.service';
+import { CookieService } from 'src/core/security/cookie/cookie.service';
+import { Request, Response } from 'express';
+import { session } from 'passport';
 
 @Service()
 export class AuthService {
@@ -31,6 +34,7 @@ export class AuthService {
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
     private readonly sessionService: SessionService, // Assume session service exists
+    private readonly cookieService: CookieService, // For managing cookies
   ) {}
  
   // 1. Register logic
@@ -80,7 +84,7 @@ export class AuthService {
   }
 
   // 2. Login logic
-  async login(userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
+  async login(request: Request, userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
     console.log("AuthService.signIn called with userPayload:", userPayload);
     const data = await this.tokenService.generateAuthTokens(userPayload); 
     console.log("Generated tokens:", data);
@@ -97,16 +101,29 @@ export class AuthService {
     const createSessionDto = { userId: userPayload.userId, refreshTokenHash: hashedRefreshToken };
     const session = await this.sessionService.create(createSessionDto);
 
+    const res = request.res as Response; // Access the response object from the request
+    await this.cookieService.createRefreshToken(res,userPayload.userId + "", userRefreshToken);
     //#TODO need to log session creation success
     //#TODO Add refresh token to cookies
     console.log("Created session:", session);
-    return {
+  
+
+  console.log("retrieving cookie testing... ");
+  const refreshTokenFromCookie = await this.cookieService.getRefreshToken(request, userPayload.userId + "");
+  console.log("Refresh token retrieved from cookie:", refreshTokenFromCookie);
+  if (refreshTokenFromCookie) {
+    const isValid = await this.hashService.compare(refreshTokenFromCookie, session.refreshTokenHash);
+    console.log("Is refresh token from cookie valid?", isValid);  
+  } else {
+    console.log("No refresh token found in cookie for userId:", userPayload.userId);
+  }
+
+      return {
       accessToken: data.accessToken,
       refreshToken: userRefreshToken,
       userId: userPayload.userId
     }
-
-  }
+}
 
   // 3. Forgot Password logic
   async forgotPassword(email: string) {
