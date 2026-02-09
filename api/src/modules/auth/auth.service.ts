@@ -16,6 +16,7 @@ import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.ex
 import { VerificationEmailContext } from 'src/core/infrastructure/mail/interfaces/mail-context.interface';
 import { User } from '../user/entities/user.entity';
 import { UserPayload } from '../../common/interfaces/user-payload.interface';
+import { SessionService } from '../session/session.service';
 
 @Service()
 export class AuthService {
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
+    private readonly sessionService: SessionService, // Assume session service exists
   ) {}
  
   // 1. Register logic
