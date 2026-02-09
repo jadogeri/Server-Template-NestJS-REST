@@ -7,6 +7,7 @@ import { HashingService } from '../../core/security/hashing/hashing.service';
 import { TokenService } from '../../core/security/token/token.service';
 import { MailService } from '../../core/infrastructure/mail/mail.service';
 import { SessionService } from '../session/session.service';
+import { CookieService } from '../../core/security/cookie/cookie.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -42,6 +43,10 @@ describe('AuthService', () => {
         },
         {
           provide: SessionService,
+          useValue: { create: jest.fn(), findOne: jest.fn(), update: jest.fn() },
+        },
+       {
+           provide: CookieService,
           useValue: { create: jest.fn(), findOne: jest.fn(), update: jest.fn() },
         },
       ],

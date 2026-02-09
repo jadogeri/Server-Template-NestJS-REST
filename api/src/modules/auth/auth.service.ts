@@ -13,13 +13,12 @@ import { MailService } from '../../core/infrastructure/mail/mail.service';
 import { log } from 'node:console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
-import { VerificationEmailContext } from 'src/core/infrastructure/mail/interfaces/mail-context.interface';
+import { VerificationEmailContext } from '../../core/infrastructure/mail/interfaces/mail-context.interface';
 import { User } from '../user/entities/user.entity';
 import { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { SessionService } from '../session/session.service';
-import { CookieService } from 'src/core/security/cookie/cookie.service';
+import { CookieService } from '../../core/security/cookie/cookie.service';
 import { Request, Response } from 'express';
-import { session } from 'passport';
 
 @Service()
 export class AuthService {
