@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { SwaggerModule } from '@nestjs/swagger';
 import { adminSwaggerConfig, swaggerConfig } from './configs/swagger.config';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
+import cookieParser from 'cookie-parser';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +19,7 @@ async function bootstrap() {
     transform: true, // Automatically transforms payloads to DTO instances
     stopAtFirstError: true, // Stops validation on the first error encountered
   }));
+  app.use(cookieParser()); // Add cookie parser middleware
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
