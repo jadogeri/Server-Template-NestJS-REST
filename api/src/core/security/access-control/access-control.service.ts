@@ -5,12 +5,12 @@ import { Service } from "../../../common/decorators/service.decorator";
 @Service()
 export class AccessControlService {
   // We pass the user object directly to avoid calling AuthService inside here
-  isUserActive(user: Auth): boolean {
-    return user?.isEnabled ;
+  isUserActive(auth: Auth): boolean {
+    return auth?.isEnabled ;
   }
 
-  isUserVerified(user: Auth): boolean {
-    return user?.isVerified;
+  isUserVerified(auth: Auth): boolean {
+    return auth?.isVerified;
   }
 
 

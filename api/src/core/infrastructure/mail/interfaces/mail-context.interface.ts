@@ -15,4 +15,4 @@ export interface VerificationEmailContext extends BaseEmailContext {
 }
 
 // A union type for your reusable sendEmail method
-export type MailContext = WelcomeEmailContext | VerificationEmailContext | any;
+export type MailContext = WelcomeEmailContext | VerificationEmailContext ;

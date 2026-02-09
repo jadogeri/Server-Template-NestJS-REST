@@ -1,5 +1,5 @@
-import { BadRequestException, ConflictException, GoneException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
+import { BadRequestException, ConflictException, GoneException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
 import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
@@ -10,13 +10,17 @@ import { Service } from '../../common/decorators/service.decorator';
 import { RoleService } from '../role/role.service';
 import { TokenService } from '../../core/security/token/token.service';
 import { MailService } from '../../core/infrastructure/mail/mail.service';
-import { log } from 'console';
+import { log } from 'node:console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
 import { VerificationEmailContext } from 'src/core/infrastructure/mail/interfaces/mail-context.interface';
+import { User } from '../user/entities/user.entity';
+import { UserPayload } from '../../common/interfaces/user-payload.interface';
 
 @Service()
 export class AuthService {
+
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private readonly authRepository: AuthRepository,
@@ -70,12 +74,31 @@ export class AuthService {
   }
 
   // 2. Login logic
-  async login(loginDto: LoginDto) {
-    // Logic: Validate user, sign and return JWT
-    return { 
-      access_token: 'placeholder_jwt_token',
-      user: loginDto.email 
-    };
+  async login(userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
+    console.log("AuthService.signIn called with userPayload:", userPayload);
+    const data = await this.tokenService.generateAuthTokens(userPayload); 
+    console.log("Generated tokens:", data);
+    // Here you would implement the actual token generation logic
+
+    //create a session
+    //const refreshTokenHash = await this.bcryptService.hashData(data.refreshToken);
+    //#TODO : Hash the refresh token before storing
+    // For demo purposes, we are storing it as is
+    // data.refreshToken will be hashed later with argon2
+    const userRefreshToken = data.refreshToken; // Storing plain for demo; hash in production
+    const hashedRefreshToken = await this.hashService.hash(userRefreshToken);
+    console.log("Hashed refresh token:", hashedRefreshToken);
+    const session = await this.sessionService.createSession(userPayload.userId, hashedRefreshToken);
+
+    //#TODO need to log session creation success
+    //#TODO Add refresh token to cookies
+    console.log("Created session:", session);
+    return {
+      accessToken: data.accessToken,
+      refreshToken: userRefreshToken,
+      userId: userPayload.userId
+    }
+
   }
 
   // 3. Forgot Password logic
@@ -185,5 +208,30 @@ async resendVerification(email: string) {
     // Logic: Permanently delete user from DB
     return { message: `Account ${userId} permanently deleted` };
   }    
+
+   async verifyUser(email: string, password: string) {
+  try {
+    const auth = await this.authRepository.findByEmail(email);
+    if (!auth) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    // ALWAYS use the service so the pepper logic stays identical
+    const authenticated = await this.hashService.compare(password, auth.password);
+
+    if (!authenticated) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+      const user = await this.authRepository.findOne({
+    where: { id: auth.user.id },
+    relations: ['roles', 'roles.permissions'], // This is crucial
+  });
+  
+    return user;
+  } catch (error) {
+    this.logger.error('Verify user error', error);
+    throw new UnauthorizedException('Credentials are not valid');
+  }
+}
 }
 

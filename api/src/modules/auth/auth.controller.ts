@@ -1,14 +1,15 @@
-import { Controller,Get, Post, Body, Patch, Delete, Request, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller,Get, Post, Body, Patch, Delete, Request, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ReactivateDto } from './dto/auth.dto';
 //import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Assume standard JWT Guard
 
 
 import { AuthService } from './auth.service';
 import { ApiOperation, ApiBody, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { CreateAuthDto } from './dto/create-auth.dto';
 import { TokenValidationPipe } from '../../common/pipes/token-validation.pipe';
 import { EmailValidationPipe } from '../../common/pipes/email-validation.pipe';
-
+import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
+import type { UserPayload } from '../../common/interfaces/user-payload.interface';
+import { User } from '../../common/decorators/user.decorator';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -39,13 +40,18 @@ export class AuthController {
 
   // 2. Login: POST /auth/login
   @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Authenticate user and return JWT token' })
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async signIn(@User() user: UserPayload): Promise<any> {
+    console.log("AuthController: Received login request for:", user.email);
+    console.log("AuthController: Passing to AuthService.signIn", user);
+    return this.authService.login(user);
   }
 
+
     @Get('/me')
-  me(@Request() req) {
+  async me(@Request() req) {
     return { message: 'This is a protected route', user: req.user };
   }
 
