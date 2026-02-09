@@ -5,7 +5,8 @@ import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
 import { HashingService } from '../../core/security/hashing/hashing.service';
 import { TokenService } from '../../core/security/token/token.service';
-import { MailService } from '../../core/security/mail/mail.service';
+import { MailService } from '../../core/infrastructure/mail/mail.service';
+import { SessionService } from '../session/session.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -38,6 +39,10 @@ describe('AuthService', () => {
         {
           provide: MailService,
           useValue: { sendVerificationEmail: jest.fn() },
+        },
+        {
+          provide: SessionService,
+          useValue: { create: jest.fn(), findOne: jest.fn(), update: jest.fn() },
         },
       ],
     }).compile();

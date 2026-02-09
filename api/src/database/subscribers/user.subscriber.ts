@@ -1,8 +1,8 @@
-import { Role } from "../../../modules/role/entities/role.entity";
-import { User } from "../../../modules/user/entities/user.entity";
-import { UserRole } from "../../../common/enums/user-role.enum";
+import { Role } from "../../modules/role/entities/role.entity";
+import { User } from "../../modules/user/entities/user.entity";
+import { UserRole } from "../../common/enums/user-role.enum";
 import { EventSubscriber, EntitySubscriberInterface, InsertEvent } from "typeorm";
-import { RoleNotFoundException } from "../../../common/exceptions/role-not-found.exception";
+import { RoleNotFoundException } from "../../common/exceptions/role-not-found.exception";
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<User> {

@@ -1,5 +1,5 @@
-import { BadRequestException, ConflictException, GoneException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
+import { BadRequestException, ConflictException, GoneException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
 import { UserGeneratorUtil } from '../../common/utils/user-generator.util';
@@ -9,14 +9,19 @@ import { ProfileGeneratorUtil } from '../../common/utils/profile-generator.util'
 import { Service } from '../../common/decorators/service.decorator';
 import { RoleService } from '../role/role.service';
 import { TokenService } from '../../core/security/token/token.service';
-import { MailService } from '../../core/security/mail/mail.service';
-import { log } from 'console';
+import { MailService } from '../../core/infrastructure/mail/mail.service';
+import { log } from 'node:console';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthNotFoundException } from '../../common/exceptions/auth-not-found.exception';
-import { VerificationEmailContext } from 'src/core/security/mail/interfaces/mail-context.interface';
+import { VerificationEmailContext } from 'src/core/infrastructure/mail/interfaces/mail-context.interface';
+import { User } from '../user/entities/user.entity';
+import { UserPayload } from '../../common/interfaces/user-payload.interface';
+import { SessionService } from '../session/session.service';
 
 @Service()
 export class AuthService {
+
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private readonly authRepository: AuthRepository,
@@ -25,6 +30,7 @@ export class AuthService {
     private readonly hashService: HashingService, // Replace with actual Argon2 service 
     private readonly tokenService: TokenService, // For JWT generation
     private readonly mailService: MailService, // For sending emails
+    private readonly sessionService: SessionService, // Assume session service exists
   ) {}
  
   // 1. Register logic
@@ -59,23 +65,47 @@ export class AuthService {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
+      await this.authRepository.update(auth.user.id, { verificationToken });
+
      const context : VerificationEmailContext = {
       firstName: auth.user.firstName,      
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
      await this.mailService.sendVerificationEmail(email, context);     
      console.log('Verification email sent to:', email);
-    }    
-    throw new NotFoundException('User acocount not created successfully.');
+      return { message: 'Registration successful. Please check your email to verify your account.' };
+    }else {   
+      throw new NotFoundException('User acocount not created successfully.');
+    }
   }
 
   // 2. Login logic
-  async login(loginDto: LoginDto) {
-    // Logic: Validate user, sign and return JWT
-    return { 
-      access_token: 'placeholder_jwt_token',
-      user: loginDto.email 
-    };
+  async login(userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
+    console.log("AuthService.signIn called with userPayload:", userPayload);
+    const data = await this.tokenService.generateAuthTokens(userPayload); 
+    console.log("Generated tokens:", data);
+    // Here you would implement the actual token generation logic
+
+    //create a session
+    //const refreshTokenHash = await this.bcryptService.hashData(data.refreshToken);
+    //#TODO : Hash the refresh token before storing
+    // For demo purposes, we are storing it as is
+    // data.refreshToken will be hashed later with argon2
+    const userRefreshToken = data.refreshToken; // Storing plain for demo; hash in production
+    const hashedRefreshToken = await this.hashService.hash(userRefreshToken);
+    console.log("Hashed refresh token:", hashedRefreshToken);
+    const createSessionDto = { userId: userPayload.userId, refreshTokenHash: hashedRefreshToken };
+    const session = await this.sessionService.create(createSessionDto);
+
+    //#TODO need to log session creation success
+    //#TODO Add refresh token to cookies
+    console.log("Created session:", session);
+    return {
+      accessToken: data.accessToken,
+      refreshToken: userRefreshToken,
+      userId: userPayload.userId
+    }
+
   }
 
   // 3. Forgot Password logic
@@ -117,7 +147,7 @@ export class AuthService {
        throw new ConflictException({ message: 'Your email is already verified. You can proceed to login.',
                 alreadyVerified: true });
       }else{
-        await this.authRepository.update(userAccount.id, { isEnabled: true, verificationToken:null, verifiedAt: new Date() });
+        await this.authRepository.update(userAccount.id, { isEnabled: true, isVerified: true, verificationToken: null, verifiedAt: new Date() });
       }
       return {payload};
       // ... update user to verified in DB  
@@ -185,5 +215,31 @@ async resendVerification(email: string) {
     // Logic: Permanently delete user from DB
     return { message: `Account ${userId} permanently deleted` };
   }    
+
+  async verifyUser(email: string, password: string) {
+    try {
+      const auth = await this.authRepository.findByEmail(email);
+      if (!auth) {
+        throw new UnauthorizedException("User not found");
+      }
+
+      // ALWAYS use the service so the pepper logic stays identical
+      const authenticated = await this.hashService.compare(password, auth.password);
+
+      if (!authenticated) {
+        throw new UnauthorizedException("Invalid credentials");
+      }
+        const user = await this.userService.findByUserId(auth.user.id); // Fetch user with roles and permissions
+    
+      return user;
+    } catch (error) {
+      this.logger.error('Verify user error', error);
+      throw new UnauthorizedException('Credentials are not valid');
+    }
+  }
+
+  async findByEmail(email: string) {
+    return await this.authRepository.findByEmail(email);
+  }
 }
 

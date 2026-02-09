@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Session } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { Auth } from './entities/auth.entity';
@@ -7,12 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { HashingService } from '../../core/security/hashing/hashing.service';
 import { UserModule } from '../user/user.module';
 import { RoleModule } from '../role/role.module';
-import { SecurityModule } from '../../core/security/security.module';
+import { SessionModule } from '../session/session.module';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
-  imports: [SecurityModule, UserModule, RoleModule, TypeOrmModule.forFeature([Auth])],
+  imports: [ UserModule, RoleModule, SessionModule, TypeOrmModule.forFeature([Auth])],
   controllers: [AuthController],
-  providers: [HashingService, AuthService, AuthRepository],
+  providers: [HashingService, AuthService, AuthRepository, LocalStrategy],
   exports: [AuthService, AuthRepository],
 })
 export class AuthModule {}
