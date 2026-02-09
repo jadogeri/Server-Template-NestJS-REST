@@ -65,14 +65,18 @@ export class AuthService {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
+      await this.authRepository.update(auth.user.id, { verificationToken });
+
      const context : VerificationEmailContext = {
       firstName: auth.user.firstName,      
       verificationLink: `http://localhost:3000/auth/verify-email?token=${verificationToken}`,
      };
      await this.mailService.sendVerificationEmail(email, context);     
      console.log('Verification email sent to:', email);
-    }    
-    throw new NotFoundException('User acocount not created successfully.');
+      return { message: 'Registration successful. Please check your email to verify your account.' };
+    }else {   
+      throw new NotFoundException('User acocount not created successfully.');
+    }
   }
 
   // 2. Login logic
@@ -90,7 +94,8 @@ export class AuthService {
     const userRefreshToken = data.refreshToken; // Storing plain for demo; hash in production
     const hashedRefreshToken = await this.hashService.hash(userRefreshToken);
     console.log("Hashed refresh token:", hashedRefreshToken);
-    const session = await this.sessionService.createSession(userPayload.userId, hashedRefreshToken);
+    const createSessionDto = { userId: userPayload.userId, refreshTokenHash: hashedRefreshToken };
+    const session = await this.sessionService.create(createSessionDto);
 
     //#TODO need to log session creation success
     //#TODO Add refresh token to cookies
@@ -142,7 +147,7 @@ export class AuthService {
        throw new ConflictException({ message: 'Your email is already verified. You can proceed to login.',
                 alreadyVerified: true });
       }else{
-        await this.authRepository.update(userAccount.id, { isEnabled: true, verificationToken:null, verifiedAt: new Date() });
+        await this.authRepository.update(userAccount.id, { isEnabled: true, isVerified: true, verificationToken: null, verifiedAt: new Date() });
       }
       return {payload};
       // ... update user to verified in DB  
@@ -211,29 +216,30 @@ async resendVerification(email: string) {
     return { message: `Account ${userId} permanently deleted` };
   }    
 
-   async verifyUser(email: string, password: string) {
-  try {
-    const auth = await this.authRepository.findByEmail(email);
-    if (!auth) {
-      throw new UnauthorizedException("User not found");
-    }
+  async verifyUser(email: string, password: string) {
+    try {
+      const auth = await this.authRepository.findByEmail(email);
+      if (!auth) {
+        throw new UnauthorizedException("User not found");
+      }
 
-    // ALWAYS use the service so the pepper logic stays identical
-    const authenticated = await this.hashService.compare(password, auth.password);
+      // ALWAYS use the service so the pepper logic stays identical
+      const authenticated = await this.hashService.compare(password, auth.password);
 
-    if (!authenticated) {
-      throw new UnauthorizedException("Invalid credentials");
+      if (!authenticated) {
+        throw new UnauthorizedException("Invalid credentials");
+      }
+        const user = await this.userService.findByUserId(auth.user.id); // Fetch user with roles and permissions
+    
+      return user;
+    } catch (error) {
+      this.logger.error('Verify user error', error);
+      throw new UnauthorizedException('Credentials are not valid');
     }
-      const user = await this.authRepository.findOne({
-    where: { id: auth.user.id },
-    relations: ['roles', 'roles.permissions'], // This is crucial
-  });
-  
-    return user;
-  } catch (error) {
-    this.logger.error('Verify user error', error);
-    throw new UnauthorizedException('Credentials are not valid');
   }
-}
+
+  async findByEmail(email: string) {
+    return await this.authRepository.findByEmail(email);
+  }
 }
 

@@ -1,1 +1,4 @@
-export class CreateSessionDto {}
+export class CreateSessionDto {
+    userId: number;
+    refreshTokenHash: string;
+}

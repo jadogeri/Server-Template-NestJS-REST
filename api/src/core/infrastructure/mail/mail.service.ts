@@ -21,16 +21,19 @@ export class MailService {
    */
   async sendEmail(to: string, folder: string, context: MailContext) {
     const subjectPath = path.join(__dirname, 'templates', folder, 'subject.hbs');
+    console.log('Subject template path:', subjectPath); // Debugging log
     const subjectTemplate = fs.readFileSync(subjectPath, 'utf8');
     const compiledSubject = handlebars.compile(subjectTemplate)(context);
 
-    return await this.mailerService.sendMail({
+    const result =  await this.mailerService.sendMail({
       to: to,
       subject: compiledSubject,
       template: `${folder}/html`,
       text: `${folder}/text`,
       context: context,
     });
+    console.log('Email send result:', result); // Debugging log
+    return result;
   }
 
     /**
@@ -52,6 +55,8 @@ export class MailService {
       ...this.getBaseContext(),
       ...context,
     };
+
+    console.log('Full context for verification email:', fullContext); // Debugging log
     return await this.sendEmail(to, 'verify-account', fullContext);
   }
 
@@ -63,6 +68,7 @@ export class MailService {
       ...this.getBaseContext(),
       ...context,
     };
+    console.log('Full context for welcome email:', fullContext); // Debugging log
     return await this.sendEmail(to, 'welcome', fullContext);
   }
 

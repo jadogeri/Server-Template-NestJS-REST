@@ -14,5 +14,13 @@ export class SessionRepository extends BaseRepository<Session> {
     super(sessionRepository); // Pass the injected TypeORM repo to the super class
   }
 
+  async findAllAndCountByUser(userId: number): Promise<[Session[], number]> {
+    return await this.sessionRepository.findAndCount({
+      where: { auth: { id: userId } },
+      order: { createdAt: 'ASC' }, // Oldest first
+    });
+
+  }
+
   
 }

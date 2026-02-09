@@ -1,18 +1,20 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy as PassportLocalStrategy} from 'passport-local';
+import { Strategy } from 'passport-local';
 import { AuthService } from '../auth.service';
 import { UserPayload } from '../../../common/interfaces/user-payload.interface';
 import { Permission } from '../../../modules/permission/entities/permission.entity';
 import { AccessControlService } from 'src/core/security/access-control/access-control.service';
 import { UserService } from '../../../modules/user/user.service';
 import { Role } from '../../../modules/role/entities/role.entity';
-import { Strategy } from '../../../common/decorators/strategy.decorator';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { PermissionString } from 'src/common/types/permission-string.type';
+import { PermissionStringGeneratorUtil } from 'src/common/utils/permission-string.util';
 
-@Strategy() // Use the custom @Strategy decorator
-export class LocalStrategy extends PassportStrategy(PassportLocalStrategy, 'local') {
-    private readonly permissionSet = new Set<Permission>();
-    private readonly roleSet = new Set<Role>();
+@Injectable() // Use the custom @Strategy decorator
+export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
+    private readonly permissionSet = new Set<PermissionString>();
+    private readonly roleSet = new Set<UserRole>();
     private readonly logger = new Logger(LocalStrategy.name);  
   constructor(
     private readonly authService: AuthService,
@@ -28,17 +30,26 @@ export class LocalStrategy extends PassportStrategy(PassportLocalStrategy, 'loca
   async validate(email: string, password: string): Promise<UserPayload | null> {
     console.log('Validating user in LocalStrategy with email:', email);
     console.log('Password received for validation:', password );
-    const auth = await this.authService.verifyUser(email, password);
-    if (!auth) {
+    const foundUser = await this.authService.verifyUser(email, password);
+    if (!foundUser) {
       console.log('User validation failed for email:', email);
       return null;
     } 
+    const auth = await this.authService.findByEmail(email);
+    if (!auth) {
+      console.log('Auth record not found for email:', email);
+      return null;
+    }
+
    //  account status checks
-    if (this.accessControlService.isUserActive(auth)) {
+
+    if (!this.accessControlService.isUserActive(auth)) {
       this.logger.warn(`Account for email ${email} is disabled.`);
       return null;
 
     }
+
+    console.log(`Account for email ${email} is active.`);
 
     if (!this.accessControlService.isUserVerified(auth)) {
       this.logger.warn(`Account for email ${email} is not verified.`);
@@ -51,18 +62,22 @@ export class LocalStrategy extends PassportStrategy(PassportLocalStrategy, 'loca
       return null;
     }
 
-    user.roles.forEach(role => {
-      role.permissions.forEach(permission => {
-        this.permissionSet.add(permission); // Add permission to set
-      });
-    });
+// 2. Implementation (No 'as' needed!)
+const uniquePermissions: PermissionString[] = [
+  ...new Set(
+    user.roles.flatMap(role => 
+      role.permissions.map(p => PermissionStringGeneratorUtil.generate(p.resource, p.action))
+    )
+  )
+];
 
-    user.roles.forEach(role => {
-      this.roleSet.add(role); // Add role to set
-    });
-
-    const uniquePermissions = Array.from(this.permissionSet);
-    const uniqueRoles = Array.from(this.roleSet);
+// 2. Implementation (No 'as' needed!)
+const uniqueRoles: UserRole[] = [
+  ...new Set(
+    user.roles.flatMap(role => 
+      role.name)
+    )  
+];
 
     console.log(`User ${email} has roles:`, uniqueRoles);
     console.log(`User ${email} has permissions:`, uniquePermissions);

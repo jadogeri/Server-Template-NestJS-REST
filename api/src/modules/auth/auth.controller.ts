@@ -40,8 +40,8 @@ export class AuthController {
 
   // 2. Login: POST /auth/login
   @HttpCode(HttpStatus.OK)
-  @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Authenticate user and return JWT token' })
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async signIn(@User() user: UserPayload): Promise<any> {
     console.log("AuthController: Received login request for:", user.email);
