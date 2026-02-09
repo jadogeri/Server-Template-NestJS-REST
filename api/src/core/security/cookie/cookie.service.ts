@@ -32,7 +32,7 @@ export class CookieService {
   }
 
   async getRefreshToken(request: Request, userId: string): Promise<string | undefined> {
-    return await request.cookies[`refresh_${userId}`];
+    return await request.cookies?.[`refresh_${userId}`];
   }
 
   updateRefreshToken(res: Response, userId: string, newToken: string) {
