@@ -6,9 +6,13 @@ import { Response, Request, CookieOptions } from 'express';
 // @Injectable({ scope: Scope.REQUEST })
 @Injectable()
 export class CookieService {
+
+  private readonly REFRESH_COOKIE_NAME: string;
   constructor(
     // @Inject(REQUEST) private readonly request: Request & { res: Response },
-    private configService: ConfigService) {}    
+    private readonly configService: ConfigService) {
+      this.REFRESH_COOKIE_NAME = this.configService.get<string>('REFRESH_TOKEN_COOKIE_NAME', 'refreshToken');
+    }    
 
   // Centralized configuration getter
   private get cookieOptions(): CookieOptions {
@@ -26,20 +30,32 @@ export class CookieService {
 //     return this.request.res;
 //   }
 
-  async createRefreshToken(res: Response, userId: string, token: string) {
-    //console.log(`Setting refresh token cookie for userId: ${userId} with options:`, this.cookieOptions);
-   res.cookie(`refresh_${userId}`, token, this.cookieOptions);
+    /**
+   * Sets a generic refresh token cookie. 
+   * The userId should be encoded INSIDE the token (JWT) or looked up via DB.
+   */
+  async createRefreshToken(res: Response, token: string) {
+    res.cookie(this.REFRESH_COOKIE_NAME, token, this.cookieOptions);
   }
 
-  async getRefreshToken(request: Request, userId: string): Promise<string | undefined> {
-    return await request.cookies?.[`refresh_${userId}`];
+  /**
+   * Retrieves the refresh token without needing to know the userId first.
+   */
+  async getRefreshToken(request: Request): Promise<string | undefined> {
+    return request.cookies?.[this.REFRESH_COOKIE_NAME];
   }
 
-  updateRefreshToken(res: Response, userId: string, newToken: string) {
-    this.createRefreshToken(res, userId, newToken);
+  /**
+   * Updates the existing refresh token cookie with a new value.
+   */
+  updateRefreshToken(res: Response, newToken: string) {
+    this.createRefreshToken(res, newToken);
   }
 
-  deleteRefreshToken(res: Response, userId: string) {
-    res.clearCookie(`refresh_${userId}`, { path: '/' });
+  /**
+   * Clears the refresh token cookie on logout.
+   */
+  deleteRefreshToken(res: Response) {
+    res.clearCookie(this.REFRESH_COOKIE_NAME, { path: '/' });
   }
 }

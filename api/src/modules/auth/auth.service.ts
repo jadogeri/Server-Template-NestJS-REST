@@ -101,14 +101,14 @@ export class AuthService {
     const session = await this.sessionService.create(createSessionDto);
 
     const res = request.res as Response; // Access the response object from the request
-    await this.cookieService.createRefreshToken(res,userPayload.userId + "", userRefreshToken);
+    await this.cookieService.createRefreshToken(res, userRefreshToken);
     //#TODO need to log session creation success
     //#TODO Add refresh token to cookies
     console.log("Created session:", session);
   
 
   console.log("retrieving cookie testing... ");
-  const refreshTokenFromCookie = await this.cookieService.getRefreshToken(request, userPayload.userId + "");
+  const refreshTokenFromCookie = await this.cookieService.getRefreshToken(request);
   console.log("Refresh token retrieved from cookie:", refreshTokenFromCookie);
   if (refreshTokenFromCookie) {
     const isValid = await this.hashService.compare(refreshTokenFromCookie, session.refreshTokenHash);
