@@ -27,7 +27,7 @@ export class CookieService {
 //   }
 
   async createRefreshToken(res: Response, userId: string, token: string) {
-    console.log(`Setting refresh token cookie for userId: ${userId} with options:`, this.cookieOptions);
+    //console.log(`Setting refresh token cookie for userId: ${userId} with options:`, this.cookieOptions);
    res.cookie(`refresh_${userId}`, token, this.cookieOptions);
   }
 

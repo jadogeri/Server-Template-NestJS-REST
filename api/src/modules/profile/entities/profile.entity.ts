@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 import { Location } from "../../../common/entities/location.entity";
 
 @Entity("profiles")
-export class Profile {
+export class Profile extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 

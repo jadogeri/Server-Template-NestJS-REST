@@ -58,7 +58,7 @@ export class AuthService {
     const auth =  await this.authRepository.findOne({
       where: { id: savedAuth.id }, relations: ['user' , 'user.roles'] // Ensure roles are included
     });
-    console.log("Newly created auth with user:", auth);
+    //console.log("Newly created auth with user:", auth);
 
     if (auth?.user) {
     //Generate verification token and send email (optional)

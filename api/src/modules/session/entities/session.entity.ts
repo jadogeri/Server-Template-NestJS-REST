@@ -1,8 +1,8 @@
 import { Auth } from "../../auth/entities/auth.entity";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from "typeorm";
 
 @Entity('sessions')
-export class Session {
+export class Session extends BaseEntity{
   @PrimaryGeneratedColumn("uuid")
   id: string;
 

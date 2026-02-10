@@ -1,11 +1,9 @@
-import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-    
-  export abstract class Audit {
-
+export abstract class Audit extends BaseEntity {
   @CreateDateColumn()
-  createdAt: Date; // Automatically set on insert
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date; // Automatically updated on each save()
+  updatedAt: Date;
 }

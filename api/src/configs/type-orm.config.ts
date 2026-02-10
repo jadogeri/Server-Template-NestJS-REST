@@ -1,6 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SeederOptions } from 'typeorm-extension';
-  import { DataSource } from 'typeorm';
 
 // import UserSeeder from '../resources/user/user.seeder';
 // import { UserFactory } from '../resources/user/user.factory';
@@ -10,8 +9,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 console.log("Loading TypeORM configuration...");
-console.log("Node Environment:", process.env.NODE_ENV || 'development');
-console.log("dirname in type-orm.config.ts:", __dirname);
+//console.log("Node Environment:", process.env.NODE_ENV || 'development');
+//console.log("dirname in type-orm.config.ts:", __dirname);
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isProduction = nodeEnv === 'production';
 const databaseFile = isProduction ? process.env.DATABASE || "prodDB.sqlite" : 'devDB.sqlite';

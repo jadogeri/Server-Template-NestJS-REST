@@ -30,8 +30,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 
 
   async validate(email: string, password: string): Promise<UserPayload | null> {
-    console.log('Validating user in LocalStrategy with email:', email);
-    console.log('Password received for validation:', password );
+    // console.log('Validating user in LocalStrategy with email:', email);
+    // console.log('Password received for validation:', password );
     const foundUser = await this.authService.verifyUser(email, password);
     if (!foundUser) {
       console.log('User validation failed for email:', email);
@@ -39,7 +39,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     } 
     const auth = await this.authService.findByEmail(email);
     if (!auth) {
-      console.log('Auth record not found for email:', email);
+      //console.log('Auth record not found for email:', email);
       return null;
     }
 

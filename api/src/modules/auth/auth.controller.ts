@@ -45,8 +45,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async signIn(@User() user: UserPayload, @Req() request: Request): Promise<any> {
-    console.log("AuthController: Received login request for:", user.email);
-    console.log("AuthController: Passing to AuthService.signIn", user);
+    //console.log("AuthController: Received login request for:", user.email);
+    //console.log("AuthController: Passing to AuthService.signIn", user);
     return this.authService.login(request ,user);
   }
 

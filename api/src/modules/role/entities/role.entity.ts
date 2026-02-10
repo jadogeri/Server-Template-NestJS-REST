@@ -1,11 +1,11 @@
 import { UserRole } from '../../../common/enums/user-role.enum';
 import { Permission } from '../../permission/entities/permission.entity';
 import { User } from '../../user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, BaseEntity } from 'typeorm';
 
 
 @Entity('roles')
-export class Role {
+export class Role extends BaseEntity{
   @PrimaryGeneratedColumn()
   id: number;
 

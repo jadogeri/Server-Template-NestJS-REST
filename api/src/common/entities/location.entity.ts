@@ -1,6 +1,7 @@
-import { Column } from "typeorm";
+import { Column, BaseEntity } from 'typeorm';
 
-export class Location {
+
+export abstract class Location extends BaseEntity{
     @Column({ nullable: true })
     address: string;
 
