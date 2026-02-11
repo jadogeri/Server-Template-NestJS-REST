@@ -19,6 +19,7 @@ import { Permission } from './modules/permission/entities/permission.entity';
 import { Auth } from './modules/auth/entities/auth.entity';
 import { Profile } from './modules/profile/entities/profile.entity';
 import { Contact } from './modules/contact/entities/contact.entity';
+import { AuthResource } from './configs/adminjs/auth-adminjs.config';
 
 
  @Module({
@@ -48,7 +49,7 @@ import { Contact } from './modules/contact/entities/contact.entity';
         return {
           adminJsOptions: {
             rootPath: '/admin',
-            resources: [User, Role, Session, Permission, Auth, Profile, Contact],
+            resources: [User, Role, Session, Permission, AuthResource, Profile, Contact],
           },
         };
       },
