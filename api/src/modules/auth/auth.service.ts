@@ -203,7 +203,7 @@ async resendVerification(email: string) {
       const verificationToken = await this.tokenService.generateVerificationToken(verificationTokenPayload);
       console.log("Generated verification token:", verificationToken);
 
-     const updatedUser = await this.authRepository.update(auth.user.id, { verificationToken });
+     const updatedUser = await this.authRepository.update(auth.id, { verificationToken });
      console.log('Updated User with Verification Token:', updatedUser);
 
      // Send verification email using MailService

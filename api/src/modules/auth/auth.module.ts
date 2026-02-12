@@ -9,12 +9,13 @@ import { UserModule } from '../user/user.module';
 import { RoleModule } from '../role/role.module';
 import { SessionModule } from '../session/session.module';
 import { LocalStrategy } from './strategies/local.strategy';
-import { CookieService } from 'src/core/security/cookie/cookie.service';
+import { CookieService } from '../../core/security/cookie/cookie.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [ UserModule, RoleModule, SessionModule, TypeOrmModule.forFeature([Auth])],
   controllers: [AuthController],
-  providers: [HashingService, CookieService, AuthService, AuthRepository, LocalStrategy],
+  providers: [HashingService, CookieService, AuthService, AuthRepository, LocalStrategy, JwtStrategy],
   exports: [AuthService, AuthRepository],
 })
 export class AuthModule {}
