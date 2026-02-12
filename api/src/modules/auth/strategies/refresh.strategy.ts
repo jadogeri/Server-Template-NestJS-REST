@@ -12,6 +12,7 @@ import { PermissionString } from 'src/common/types/permission-string.type';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { PermissionStringGeneratorUtil } from 'src/common/utils/permission-string.util';
 import { JwtPayloadInterface } from 'src/common/interfaces/jwt-payload.interface';
+import { SessionService } from 'src/modules/session/session.service';
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
@@ -21,23 +22,53 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
       @Inject(ConfigService) private readonly configService: ConfigService,
       private readonly authService: AuthService,
       private readonly userService: UserService,
-      private readonly accessControlService: AccessControlService
+      private readonly sessionService: SessionService,
+      private readonly accessControlService: AccessControlService,
+       
     ) {
     super({
-      // 1. Where to find the token -- in this case, from the Authorization header as a Bearer token
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
-      // 2. Secret key used to sign the token
-      secretOrKey: configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'), 
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => request.cookies?.refreshToken ?? null,
+      ]),
+      secretOrKey: configService.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+      passReqToCallback: true,
       ignoreExpiration: false,
     });
+
   }
 
 
-  async validate(jwtPayload: JwtPayloadInterface): Promise<JwtPayloadInterface | null> {
+  async validate(jwtPayload: any): Promise<any | null> {
     this.logger.log(`Validating user in JwtStrategy using extrated payload: `);
-    this.logger.debug(jwtPayload);
-    const { email, userId } = jwtPayload;
+    this.logger.debug(jwtPayload.cookies?.refreshToken);
+    
 
+    // 2. Extract the user ID from the token's payload
+    // 3. Retrieve the user and session from the database
+    // 4. Compare the refresh token from the cookie with the hashed token in the session
+    // 5. If valid, return the user information; otherwise, return null
+
+    return jwtPayload;
+    /**
+     * 
+     *   // 1. Get the raw token from the cookie again
+  const refreshToken = req.cookies?.refreshToken;
+
+  // 2. Look up the user/token in the database
+  const user = await this.userService.findById(payload.sub);
+  
+  // 3. Verify the hash (e.g., using Argon2)
+  const isMatched = await argon2.verify(user.hashedRefreshToken, refreshToken);
+  
+  if (!isMatched) {
+    throw new UnauthorizedException('Token revoked or invalid');
+  }
+
+  return user; // Attached to request.user
+}
+     */
+
+    /*
     const auth = await this.authService.findByEmail(email);
     if (!auth) {
       return null;
@@ -68,6 +99,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     console.log("JwtStrategy: Retrieved user from database:", jwtPayload);
 
     return jwtPayload;
+    */
     
   }
 }
