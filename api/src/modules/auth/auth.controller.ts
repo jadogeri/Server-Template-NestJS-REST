@@ -1,7 +1,7 @@
 import { Controller,Get, Post, Body, Patch, Delete, HttpCode, HttpStatus, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, ReactivateDto } from './dto/auth.dto';
 //import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Assume standard JWT Guard
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 
 import { AuthService } from './auth.service';
@@ -47,10 +47,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate user and return JWT token' })
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async signIn(@User() user: UserPayload,@Res({ passthrough: true }) res: Response): Promise<any> {
+  async signIn(@User() user: UserPayload,@Req() req: Request,@Res({ passthrough: true }) res: Response): Promise<any> {
     //console.log("AuthController: Received login request for:", user.email);
     //console.log("AuthController: Passing to AuthService.signIn", user);
-    return this.authService.login(res, user);
+    return this.authService.login(req, res, user);
   }
 
   @UseGuards(JwtAuthGuard)

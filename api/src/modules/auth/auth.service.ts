@@ -18,7 +18,7 @@ import { User } from '../user/entities/user.entity';
 import { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { SessionService } from '../session/session.service';
 import { CookieService } from '../../core/security/cookie/cookie.service';
-import { Request, Response } from 'express';
+import {  Request,Response } from 'express';
 
 @Service()
 export class AuthService {
@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   // 2. Login logic
-  async login(request: Request, userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
+  async login(req: Request, res: Response, userPayload: UserPayload): Promise<{ accessToken: string; refreshToken: string; userId: number } | null> {
     console.log("AuthService.signIn called with userPayload:", userPayload);
     const data = await this.tokenService.generateAuthTokens(userPayload); 
     console.log("Generated tokens:", data);
@@ -100,15 +100,14 @@ export class AuthService {
     const createSessionDto = { userId: userPayload.userId, refreshTokenHash: hashedRefreshToken };
     const session = await this.sessionService.create(createSessionDto);
 
-    const res = request.res as Response; // Access the response object from the request
+    await this.cookieService.deleteRefreshToken(res); // Clear any existing refresh token cookie  
     await this.cookieService.createRefreshToken(res, userRefreshToken);
-    //#TODO need to log session creation success
     //#TODO Add refresh token to cookies
     console.log("Created session:", session);
   
 
   console.log("retrieving cookie testing... ");
-  const refreshTokenFromCookie = await this.cookieService.getRefreshToken(request);
+  const refreshTokenFromCookie = await this.cookieService.getRefreshToken(req);
   console.log("Refresh token retrieved from cookie:", refreshTokenFromCookie);
   if (refreshTokenFromCookie) {
     const isValid = await this.hashService.compare(refreshTokenFromCookie, session.refreshTokenHash);
