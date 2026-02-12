@@ -2,6 +2,8 @@
 import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Service } from '../../../common/decorators/service.decorator';
+import { UserPayload } from 'src/common/interfaces/user-payload.interface';
+import { JwtPayloadInterface } from 'src/common/interfaces/jwt-payload.interface';
 
 
 @Service()
@@ -12,13 +14,20 @@ export class TokenService {
     @Inject('VERIFY_TOKEN_JWT_SERVICE') private readonly verifyJwtService: JwtService,
   ) {}
 
-  async generateAuthTokens(user: any) {
-    const payload = { sub: user.id, email: user.email, roles: user.roles };
+  async generateAuthTokens(user: UserPayload) {
+    console.log("Generating auth tokens for user:", user);
+    const jwtPayload: JwtPayloadInterface = {
+      userId: user.userId,
+      sub: user.userId, // Standard JWT subject claim
+      email: user.email,  
+      roles: user.roles,
+      type: 'access', // Custom claim to identify token type
+    }
 
     // Secrets and expiration are already baked into the services
     const [accessToken, refreshToken] = await Promise.all([
-      this.accessJwtService.signAsync(payload),
-      this.refreshJwtService.signAsync({ sub: user.id }),
+      this.accessJwtService.signAsync(jwtPayload),
+      this.refreshJwtService.signAsync({ sub: user.userId, type: 'refresh' }) // Minimal payload for refresh token,
     ]);
 
     return { accessToken, refreshToken };

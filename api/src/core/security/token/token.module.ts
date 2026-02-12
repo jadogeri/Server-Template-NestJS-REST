@@ -15,7 +15,7 @@ import { Auth } from '../../../modules/auth/entities/auth.entity';
       provide: 'ACCESS_TOKEN_JWT_SERVICE',
       useFactory: (config: ConfigService) => {
         return new JwtService({
-          secret: config.get('JWT_ACCESS_TOKEN_SECRET'),
+          secret: config.getOrThrow('JWT_ACCESS_TOKEN_SECRET'),
           signOptions: { expiresIn: config.get('JWT_ACCESS_TOKEN_EXPIRATION_MS') },
         });
       },
@@ -26,8 +26,8 @@ import { Auth } from '../../../modules/auth/entities/auth.entity';
       provide: 'REFRESH_TOKEN_JWT_SERVICE',
       useFactory: (config: ConfigService) => {
         return new JwtService({
-          secret: config.get('JWT_REFRESH_TOKEN_SECRET'),
-          signOptions: { expiresIn: config.get('JWT_REFRESH_TOKEN_EXPIRATION_MS') },
+          secret: config.getOrThrow('JWT_REFRESH_TOKEN_SECRET'),
+          signOptions: { expiresIn: config.getOrThrow('JWT_REFRESH_TOKEN_EXPIRATION_MS') },
         });
       },
       inject: [ConfigService],
@@ -37,8 +37,8 @@ import { Auth } from '../../../modules/auth/entities/auth.entity';
       provide: 'VERIFY_TOKEN_JWT_SERVICE',
       useFactory: (config: ConfigService) => {
         return new JwtService({
-          secret: config.get('JWT_VERIFY_TOKEN_SECRET'),
-          signOptions: { expiresIn: config.get('JWT_VERIFY_TOKEN_EXPIRATION_MS') },
+          secret: config.getOrThrow('JWT_VERIFY_TOKEN_SECRET'),
+          signOptions: { expiresIn: config.getOrThrow('JWT_VERIFY_TOKEN_EXPIRATION_MS') },
         });
       },
       inject: [ConfigService],

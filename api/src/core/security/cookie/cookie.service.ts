@@ -11,7 +11,7 @@ export class CookieService {
   constructor(
     // @Inject(REQUEST) private readonly request: Request & { res: Response },
     private readonly configService: ConfigService) {
-      this.REFRESH_COOKIE_NAME = this.configService.get<string>('REFRESH_TOKEN_COOKIE_NAME', 'refreshToken');
+      this.REFRESH_COOKIE_NAME = this.configService.getOrThrow<string>('REFRESH_TOKEN_COOKIE_NAME', 'refreshToken');
     }    
 
   // Centralized configuration getter

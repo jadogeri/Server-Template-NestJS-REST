@@ -11,6 +11,9 @@ import { EmailValidationPipe } from '../../common/pipes/email-validation.pipe';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import type { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { User } from '../../common/decorators/user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { JwtPayload } from '../../common/decorators/jwt-payload.decorator';
+import type { JwtPayloadInterface } from '../../common/interfaces/jwt-payload.interface';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -50,10 +53,13 @@ export class AuthController {
     return this.authService.login(request ,user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async me(@JwtPayload() jwtPayload: JwtPayloadInterface): Promise<any> {
 
-    @Get('/me')
-  async me(@Req() req: Request) {
-    return { message: 'This is a protected route', user: req.user };
+    console.log("AuthController:................................................");
+    console.log(jwtPayload);
+    return jwtPayload
   }
 
 
@@ -80,7 +86,7 @@ export class AuthController {
   //@UseGuards(JwtAuthGuard)
   @Patch('deactivate')
   async deactivate(@Req() req: Request) {
-    return this.authService.deactivateUser(req.user.id);
+    return this.authService.deactivateUser({} as any);
     
   }
 
@@ -88,7 +94,7 @@ export class AuthController {
   //@UseGuards(JwtAuthGuard)
   @Delete('unregister')
   async unregister(@Req() req: Request) {
-    return this.authService.unregisterAccount(req.user.id);
+    return this.authService.unregisterAccount({} as any);
   }
 
   // 3. Reactivate (Public - triggered by email link)
