@@ -1,6 +1,6 @@
 import { UserRole } from "../enums/user-role.enum";
 
-export interface JwtPayload {
+export interface JwtPayloadInterface {
   userId: number; // From auth table
   email: string; // From auth table
   roles: UserRole[]; // From user/roles table

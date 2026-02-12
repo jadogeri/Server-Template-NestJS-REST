@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Service } from '../../../common/decorators/service.decorator';
 import { UserPayload } from 'src/common/interfaces/user-payload.interface';
-import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
+import { JwtPayloadInterface } from 'src/common/interfaces/jwt-payload.interface';
 
 
 @Service()
@@ -16,7 +16,7 @@ export class TokenService {
 
   async generateAuthTokens(user: UserPayload) {
     console.log("Generating auth tokens for user:", user);
-    const jwtPayload: JwtPayload = {
+    const jwtPayload: JwtPayloadInterface = {
       userId: user.userId,
       sub: user.userId, // Standard JWT subject claim
       email: user.email,  

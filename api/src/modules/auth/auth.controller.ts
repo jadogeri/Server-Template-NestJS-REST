@@ -11,7 +11,9 @@ import { EmailValidationPipe } from '../../common/pipes/email-validation.pipe';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import type { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { User } from '../../common/decorators/user.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { JwtPayload } from '../../common/decorators/jwt-payload.decorator';
+import type { JwtPayloadInterface } from '../../common/interfaces/jwt-payload.interface';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -53,11 +55,11 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async me(@User() user: UserPayload, @Req() request: Request): Promise<any> {
+  async me(@JwtPayload() jwtPayload: JwtPayloadInterface): Promise<any> {
 
     console.log("AuthController:................................................");
-    console.log(user);
-    return user
+    console.log(jwtPayload);
+    return jwtPayload
   }
 
 

@@ -1,12 +1,12 @@
 import { NodeEnvironment } from "src/common/types/node-environment.type";
-import { JwtPayload } from "./src/common/interfaces/jwt-payload.interface";
+import { JwtPayloadInterface } from "./src/common/interfaces/jwt-payload.interface";
 import { UserPayload } from "./src/common/interfaces/user-payload.interface";
 
 declare global {
     
     namespace Express {
         export interface Request {
-            payload?: JwtPayload; // Add the user property to the Request interface
+            jwt?: JwtPayloadInterface; // Add the user property to the Request interface
             body: any; // You can specify a more specific type if you have one
             user?: UserPayload; // Add user property to Request interface
 

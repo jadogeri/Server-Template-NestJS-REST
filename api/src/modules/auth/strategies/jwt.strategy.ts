@@ -11,6 +11,7 @@ import { AuthService } from '../auth.service';
 import { PermissionString } from 'src/common/types/permission-string.type';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { PermissionStringGeneratorUtil } from 'src/common/utils/permission-string.util';
+import { JwtPayloadInterface } from 'src/common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -32,10 +33,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
 
-  async validate(userPayload: any): Promise<UserPayload | null> {
+  async validate(jwtPayload: JwtPayloadInterface): Promise<JwtPayloadInterface | null> {
     this.logger.log(`Validating user in JwtStrategy using extrated payload: `);
-    this.logger.debug(userPayload);
-    const { email, userId } = userPayload;
+    this.logger.debug(jwtPayload);
+    const { email, userId } = jwtPayload;
 
     const auth = await this.authService.findByEmail(email);
     if (!auth) {
@@ -64,8 +65,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       this.logger.warn(`User ID mismatch: token has ${userId} but auth record has ${auth.user.id}`);
       return null;
     }
+    console.log("JwtStrategy: Retrieved user from database:", jwtPayload);
 
-    return userPayload;
+    return jwtPayload;
     
   }
 }
