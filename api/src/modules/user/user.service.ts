@@ -2,10 +2,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './user.repository';
 import { Service } from '../../common/decorators/service.decorator';
-import { PermissionString } from 'src/common/types/permission-string.type';
-import { UserRole } from 'src/common/enums/user-role.enum';
-import { PermissionStringGeneratorUtil } from 'src/common/utils/permission-string.util';
-import { UserPayload } from 'src/common/interfaces/user-payload.interface';
+import { PermissionString } from '../../common/types/permission-string.type';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { PermissionStringGeneratorUtil } from '../../common/utils/permission-string.util';
+import { UserPayload } from '../../common/interfaces/user-payload.interface';
 
 @Service()
 export class UserService {

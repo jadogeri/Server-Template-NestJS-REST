@@ -14,7 +14,7 @@ import { User } from '../../common/decorators/user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt.guard';
 import { JwtPayload } from '../../common/decorators/jwt-payload.decorator';
 import type { JwtPayloadInterface } from '../../common/interfaces/jwt-payload.interface';
-import { RefreshAuthGuard } from 'src/common/guards/refresh.guard';
+import { RefreshAuthGuard } from '../../common/guards/refresh.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

@@ -36,39 +36,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(jwtPayload: JwtPayloadInterface): Promise<JwtPayloadInterface | null> {
     this.logger.log(`Validating user in JwtStrategy using extrated payload: `);
     this.logger.debug(jwtPayload);
-    const { email, userId } = jwtPayload;
 
-    const auth = await this.authService.findByEmail(email);
-    if (!auth) {
+    const jwtUser = await this.authService.verifyJwt(jwtPayload);
+    if (!jwtUser) {
+      this.logger.warn(`JWT validation failed for email: ${jwtPayload.email}`);
       return null;
     }
-   //  account status checks
-    if (!this.accessControlService.isUserActive(auth)) {
-      this.logger.warn(`Account for email ${email} is disabled.`);
-      return null;
 
-    }
-
-    this.logger.log(`Account for email ${email} is active.`);
-
-    if (!this.accessControlService.isUserVerified(auth)) {
-      this.logger.warn(`Account for email ${email} is not verified.`);
-      // Optionally, you could trigger a resend of the verification email here
-    }
-    // Assuming user entity has roles, and roles have permissions
-    const user = await this.userService.findByUserId(userId);
-    if (!user){
-      this.logger.warn(`User not found with id: ${userId}`);
-      return null;
-    }
-    if (auth.user.id !== userId) {
-      this.logger.warn(`User ID mismatch: token has ${userId} but auth record has ${auth.user.id}`);
-      return null;
-    }
-    console.log("JwtStrategy: Retrieved user from database:", jwtPayload);
-
-    return jwtPayload;
-    
+    return jwtUser;
   }
 }
 

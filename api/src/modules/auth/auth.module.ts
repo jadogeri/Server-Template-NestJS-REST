@@ -12,7 +12,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { CookieService } from '../../core/security/cookie/cookie.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
-import { UserMapperService } from './user-mapper.service';
+import { PayloadMapperService } from './payload-mapper.service';
 
 @Module({
   imports: [ UserModule, RoleModule, SessionModule, TypeOrmModule.forFeature([Auth])],
@@ -25,9 +25,10 @@ import { UserMapperService } from './user-mapper.service';
     LocalStrategy, 
     JwtStrategy, 
     RefreshStrategy, 
-    UserMapperService 
+    PayloadMapperService 
   ],    
-  exports: [AuthService, AuthRepository, UserMapperService],
+  exports: [AuthService, AuthRepository, PayloadMapperService],
 })
+
 export class AuthModule {}
 

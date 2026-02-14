@@ -8,6 +8,8 @@ import { TokenService } from '../../core/security/token/token.service';
 import { MailService } from '../../core/infrastructure/mail/mail.service';
 import { SessionService } from '../session/session.service';
 import { CookieService } from '../../core/security/cookie/cookie.service';
+import { PayloadMapperService } from './payload-mapper.service';
+import { AccessControlService } from '../../core/security/access-control/access-control.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -48,6 +50,14 @@ describe('AuthService', () => {
        {
            provide: CookieService,
           useValue: { create: jest.fn(), findOne: jest.fn(), update: jest.fn() },
+        },
+        {
+          provide: PayloadMapperService,
+          useValue: { toUserPayload: jest.fn() },
+        },
+        {
+          provide: AccessControlService,
+          useValue: { isUserVerified: jest.fn() },
         },
       ],
     }).compile();

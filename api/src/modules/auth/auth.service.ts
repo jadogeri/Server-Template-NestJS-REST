@@ -19,8 +19,9 @@ import { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { SessionService } from '../session/session.service';
 import { CookieService } from '../../core/security/cookie/cookie.service';
 import {  Request,Response } from 'express';
-import { UserMapperService } from './user-mapper.service';
+import { PayloadMapperService } from './payload-mapper.service';
 import { AccessControlService } from '../../core/security/access-control/access-control.service';
+import { JwtPayloadInterface } from 'src/common/interfaces/jwt-payload.interface';
 
 @Service()
 export class AuthService {
@@ -36,7 +37,7 @@ export class AuthService {
     private readonly mailService: MailService, // For sending emails
     private readonly sessionService: SessionService, // Assume session service exists
     private readonly cookieService: CookieService, // For managing cookies
-    private readonly userMapperService: UserMapperService, // For mapping User to UserPayload
+    private readonly payloadMapperService: PayloadMapperService, // For mapping User to UserPayload
     private readonly accessControlService: AccessControlService, // For account status checks 
   ) {}
  
@@ -253,16 +254,81 @@ async resendVerification(email: string) {
       const user = await this.userService.findByUserId(auth.user.id);
       if (!user) throw new UnauthorizedException('User profile not found');
 
-      return this.userMapperService.toPayload(user, email);
+      return this.payloadMapperService.toUserPayload(user, email);
 
     } catch (error) {
       this.logger.error('Verify user error', error);
       throw new UnauthorizedException('Failed to authenticate user');
     }
   }
+// src/modules/auth/auth.service.ts
+async verifyJwt(jwtPayload: JwtPayloadInterface): Promise<JwtPayloadInterface | null> {
+  const { userId, email } = jwtPayload;
+
+    const auth = await this.findByEmail(email);
+    if (!auth)  return null;
+   //  account status checks
+    if (!this.accessControlService.isUserActive(auth)) {
+      this.logger.warn(`Account for email ${email} is disabled.`);
+      return null;
+
+    }
+
+    this.logger.log(`Account for email ${email} is active.`);
+
+    const user = await this.userService.findByUserId(userId);
+    if (!user){
+      this.logger.warn(`User not found with id: ${userId}`);
+      return null;
+    }
+    if (auth.user.id !== userId) {
+      this.logger.warn(`User ID mismatch: token has ${userId} but auth record has ${auth.user.id}`);
+      return null;
+    }
+    console.log("JwtStrategy: Retrieved user from database:", jwtPayload);
+
+    return jwtPayload;
+}
+
 
   async findByEmail(email: string) {
     return await this.authRepository.findByEmail(email);
   }
 }
 
+/**
+ * 
+ 
+    const auth = await this.authService.findByEmail(email);
+    if (!auth) {
+      return null;
+    }
+   //  account status checks
+    if (!this.accessControlService.isUserActive(auth)) {
+      this.logger.warn(`Account for email ${email} is disabled.`);
+      return null;
+
+    }
+
+    this.logger.log(`Account for email ${email} is active.`);
+
+    // if (!this.accessControlService.isUserVerified(auth)) {
+    //   this.logger.warn(`Account for email ${email} is not verified.`);
+    //   // Optionally, you could trigger a resend of the verification email here
+    // }
+    // Assuming user entity has roles, and roles have permissions
+    const user = await this.userService.findByUserId(userId);
+    if (!user){
+      this.logger.warn(`User not found with id: ${userId}`);
+      return null;
+    }
+    if (auth.user.id !== userId) {
+      this.logger.warn(`User ID mismatch: token has ${userId} but auth record has ${auth.user.id}`);
+      return null;
+    }
+    console.log("JwtStrategy: Retrieved user from database:", jwtPayload);
+
+    return jwtPayload;
+    
+  }
+ */

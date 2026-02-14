@@ -6,8 +6,8 @@ import { User } from "../user/entities/user.entity";
 import { PermissionString } from "src/common/types/permission-string.type";
 
 @Service()
-export class UserMapperService {
-  toPayload(user: User, email: string): UserPayload {
+export class PayloadMapperService {
+  toUserPayload(user: User, email: string): UserPayload {
     const uniquePermissions: PermissionString[] = [
         ...new Set(
             user.roles.flatMap(role => 
