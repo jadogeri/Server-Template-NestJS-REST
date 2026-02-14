@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, GoneException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, GoneException, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 import { AuthRepository } from './auth.repository';
 import { AuthGeneratorUtil } from '../../common/utils/auth-generator.util';
@@ -19,6 +19,8 @@ import { UserPayload } from '../../common/interfaces/user-payload.interface';
 import { SessionService } from '../session/session.service';
 import { CookieService } from '../../core/security/cookie/cookie.service';
 import {  Request,Response } from 'express';
+import { UserMapperService } from './user-mapper.service';
+import { AccessControlService } from '../../core/security/access-control/access-control.service';
 
 @Service()
 export class AuthService {
@@ -34,6 +36,8 @@ export class AuthService {
     private readonly mailService: MailService, // For sending emails
     private readonly sessionService: SessionService, // Assume session service exists
     private readonly cookieService: CookieService, // For managing cookies
+    private readonly userMapperService: UserMapperService, // For mapping User to UserPayload
+    private readonly accessControlService: AccessControlService, // For account status checks 
   ) {}
  
   // 1. Register logic
@@ -231,25 +235,29 @@ async resendVerification(email: string) {
     return { message: `Account ${userId} permanently deleted` };
   }    
 
-  async verifyUser(email: string, password: string) {
+  async verifyUser(email: string, password: string): Promise<UserPayload | null> {
     try {
       const auth = await this.authRepository.findByEmail(email);
-      if (!auth) {
-        throw new UnauthorizedException("User not found");
-      }
+      if (!auth) throw new UnauthorizedException('Invalid credentials');
 
       // ALWAYS use the service so the pepper logic stays identical
       const authenticated = await this.hashService.compare(password, auth.password);
 
-      if (!authenticated) {
-        throw new UnauthorizedException("Invalid credentials");
-      }
-        const user = await this.userService.findByUserId(auth.user.id); // Fetch user with roles and permissions
-    
-      return user;
+      if (!authenticated) throw new UnauthorizedException("Invalid credentials provided");
+
+      // 2. Account Status Checks (Business Logic)
+      if (!this.accessControlService.isUserActive(auth)) throw new ForbiddenException('Account is disabled'); 
+
+      if (!this.accessControlService.isUserVerified(auth))  throw new ForbiddenException('Account not verified');
+      // 3. Fetch Full Data & Map to Payload
+      const user = await this.userService.findByUserId(auth.user.id);
+      if (!user) throw new UnauthorizedException('User profile not found');
+
+      return this.userMapperService.toPayload(user, email);
+
     } catch (error) {
       this.logger.error('Verify user error', error);
-      throw new UnauthorizedException('Credentials are not valid');
+      throw new UnauthorizedException('Failed to authenticate user');
     }
   }
 
